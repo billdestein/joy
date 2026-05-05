@@ -1,8 +1,6 @@
-import { architecture } from './learn/architecture.ts'
-import { backend } from './learn/backend.ts'
-import { common } from './learn/common.ts'
-
-console.log('Hello Bill')
+import { architecture } from './learn/architecture.joy.ts'
+import { backend } from './learn/backend.joy.ts'
+import { common } from './learn/common.joy.ts'
 
 // @ts-ignore
 learn(architecture)
