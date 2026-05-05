@@ -1,0 +1,21 @@
+Hello Claude
+
+I'm going to help you generate code for a product called Toolbox.  
+
+First we need to define a language called Box that will allow me to communicate with you.
+
+Box is like Typescript with a few special built-in functions.  These are 'learn' and 'execute'.
+
+Learn takes a single string argument, 'text'.  
+The text is an English description of some things I want you to know.  
+It's like a prompt with no instructions.
+
+Execute also takes a single string argument, 'text'.  
+The text is an English description of things I want you to do.  
+It's like a prompt with instructions.  
+The instructions are usually of the flavor 'generate code for ...'
+
+Files written in Box hava a '.ts' extension.  This allows us to use Typesecipt IDEs to edit Box files.
+
+Please read and execute index.ts in this directory.  It's written in Box.
+
