@@ -12,11 +12,11 @@ learn(backend)
 learn(common)
 
 // @ts-ignore
-execute(`remove the 'output' subdirectory if it exists`)
+execute(`remove the 'lucy' subdirectory if it exists`)
 
 // @ts-ignore
-execute(`create the 'output/common' subdirectory, and build the common repo in it.`)
+execute(`create the 'lucy/common' subdirectory, and build the common repo in it.`)
 
 // @ts-ignore
-execute(`create the 'output/backend' subdirectory, and build the backend repo in it.`)
+execute(`create the 'lucy/backend' subdirectory, and build the backend repo in it.`)
 

@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
 import path from 'path'
 import { config } from '../config'
-import { WorkbookType, PicType } from '@billdestein/claude-toolbox-common'
+import { WorkbookType, PicType } from '@billdestein/lucy-common'
 
 function getWorkbookDir(slug: string, workbookName: string): string {
     return path.join(config.mountDir, 'users', slug, workbookName)

@@ -1,7 +1,7 @@
 {
-  "name": "@billdestein/claude-toolbox-common",
+  "name": "@billdestein/lucy-common",
   "version": "1.0.0",
-  "description": "Common types for Claude Toolbox",
+  "description": "Common types for Lucy",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

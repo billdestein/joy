@@ -1,7 +1,7 @@
 {
-  "name": "@billdestein/claude-toolbox-backend",
+  "name": "@billdestein/lucy-backend",
   "version": "1.0.0",
-  "description": "Backend for Claude Toolbox",
+  "description": "Backend for Lucy",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.0.0",
-    "@billdestein/claude-toolbox-common": "^1.0.0",
+    "@billdestein/lucy-common": "^1.0.0",
     "@google/genai": "^0.7.0",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.0.0",
