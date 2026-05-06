@@ -1,18 +1,25 @@
-import { createServer } from './server'
-import { connect as connectRedis } from './services/redis'
-import { config } from './config'
+import express from 'express'
+import cookieParser from 'cookie-parser'
+import { connectRedis } from './session.js'
+import { authRouter } from './routes/auth.js'
+import { healthRouter } from './routes/health.js'
+import { workbooksRouter } from './routes/workbooks.js'
 
-async function main(): Promise<void> {
+const app = express()
+const PORT = process.env.PORT ?? 3000
+
+app.use(express.json())
+app.use(cookieParser())
+
+app.use('/v1/auth', authRouter)
+app.use('/v1/health', healthRouter)
+app.use('/v1/workbooks', workbooksRouter)
+
+async function start() {
     await connectRedis()
-    console.log('Connected to Redis')
-
-    const app = createServer()
-    app.listen(config.port, () => {
-        console.log(`Lucy backend listening on port ${config.port}`)
+    app.listen(PORT, () => {
+        console.log(`Lucy backend listening on port ${PORT}`)
     })
 }
 
-main().catch(err => {
-    console.error('Failed to start server:', err)
-    process.exit(1)
-})
+start().catch(console.error)

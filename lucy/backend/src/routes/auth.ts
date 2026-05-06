@@ -1,39 +1,37 @@
-import { Router, Request, Response } from 'express'
+import { Router } from 'express'
+import { CognitoIdentityProviderClient, GetUserCommand } from '@aws-sdk/client-cognito-identity-provider'
 import { v4 as uuidv4 } from 'uuid'
-import { getEmailFromAccessToken } from '../services/cognito'
-import { setSession } from '../services/redis'
-import { findOrCreateUser } from '../services/user-store'
-import { config } from '../config'
+import { storeSession } from '../session.js'
+import { findOrCreateUser } from '../user.js'
+import { ensureUserDir } from '../fileSystem.js'
 
-const router = Router()
+export const authRouter = Router()
 
-router.post('/login', async (req: Request, res: Response): Promise<void> => {
-    try {
-        const authHeader = req.headers.authorization
-        if (!authHeader) {
-            res.status(401).json({ error: 'Missing authorization header' })
-            return
-        }
-
-        const accessToken = authHeader.replace(/^Bearer\s+/i, '')
-        const email = await getEmailFromAccessToken(accessToken)
-
-        const sessionId = uuidv4()
-        await setSession(sessionId, email)
-        findOrCreateUser(email)
-
-        res.cookie(config.sessionCookieName, sessionId, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: config.sessionTtlSeconds * 1000,
-            sameSite: 'strict',
-        })
-
-        res.status(200).end()
-    } catch (err) {
-        console.error('Login error:', err)
-        res.status(401).json({ error: 'Authentication failed' })
-    }
+const cognitoClient = new CognitoIdentityProviderClient({
+    region: process.env.AWS_REGION ?? 'us-east-1',
 })
 
-export default router
+authRouter.post('/login', async (req, res) => {
+    const authHeader = req.headers['authorization']
+    if (!authHeader?.startsWith('Bearer ')) {
+        res.sendStatus(401)
+        return
+    }
+    const accessToken = authHeader.slice(7)
+
+    const cognitoResponse = await cognitoClient.send(new GetUserCommand({ AccessToken: accessToken }))
+    const email = cognitoResponse.UserAttributes?.find((a) => a.Name === 'email')?.Value
+    if (!email) {
+        res.sendStatus(401)
+        return
+    }
+
+    const sessionId = uuidv4()
+    await storeSession(sessionId, email)
+
+    const user = findOrCreateUser(email)
+    await ensureUserDir(user.slug)
+
+    res.cookie('sessionId', sessionId, { httpOnly: true })
+    res.sendStatus(200)
+})

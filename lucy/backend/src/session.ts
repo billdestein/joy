@@ -1,0 +1,19 @@
+import { createClient } from 'redis'
+
+const SESSION_TTL_SECONDS = 3600
+
+const redisClient = createClient({ url: process.env.REDIS_URL ?? 'redis://localhost:6379' })
+
+redisClient.on('error', (err) => console.error('Redis error:', err))
+
+export async function connectRedis(): Promise<void> {
+    await redisClient.connect()
+}
+
+export async function storeSession(sessionId: string, email: string): Promise<void> {
+    await redisClient.set(`session:${sessionId}`, email, { EX: SESSION_TTL_SECONDS })
+}
+
+export async function getEmailFromSession(sessionId: string): Promise<string | null> {
+    return redisClient.get(`session:${sessionId}`)
+}

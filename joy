@@ -4,14 +4,14 @@ I'm going to help you generate code for a product called Lucy.
 
 First we need to define a domain specific language called Joy that will allow me to communicate with you.
 
-Joy is exactly like Typescript with two special built-in functions.  These are 'learn' and 'execute'.
+Joy is exactly like Typescript with two special built-in functions.  These are 'joyLearn' and 'joyExecute'.
 
-Learn takes a single string argument, 'text'.  The text is an English description of some things I want you to know.  It's like a prompt with no instructions.
+The joyLearn function takes a single string argument, 'prompt'.  The prompt is an English description of some things I want you to know.  The prompt has no instructions.
 
-Execute also takes a single string argument, 'text'.  The text is an English description of things I want you to do.  It's like a prompt with instructions.  The instructions are usually of the flavor 'generate code for ...'
+The joyExecute function also takes a single string argument, 'prompt'.  The prompt is an English description of things I want you to do.  The instructions are usually of the flavor 'generate code for ...'
 
 Files written in Joy have a '.joy.ts' extension.  This allows us to use Typescript IDEs to edit Joy files.
 
-In a Joy program, descriptive text may include paths to files and paths to directories.  If a path starts with the string '/joy', then it's a path relative to where Claude is running.
+In a Joy program, prompts may include paths to files and paths to directories.  If a path starts with the string '/joy', then it's a path relative to the directory where Claude is running.
 
 Please read and execute index.joy.ts in this directory.  It's written in Joy.
