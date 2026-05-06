@@ -1,12 +1,14 @@
 import express from 'express'
 import cookieParser from 'cookie-parser'
-import { authRouter } from './routes/auth'
-import { healthRouter } from './routes/health'
-import { workbooksRouter } from './routes/workbooks'
+import cors from 'cors'
+import authRouter from './routes/auth'
+import healthRouter from './routes/health'
+import workbooksRouter from './routes/workbooks'
 
-export function createServer() {
+export function createServer(): express.Application {
     const app = express()
 
+    app.use(cors({ origin: true, credentials: true }))
     app.use(express.json())
     app.use(cookieParser())
 

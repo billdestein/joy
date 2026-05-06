@@ -1,3 +1,9 @@
+export type UserType = {
+    email: string
+    slug: string
+    workbooks: WorkbookType[]
+}
+
 export type PicType = {
     createdAt: number
     filename: string
@@ -14,10 +20,4 @@ export type WorkbookType = {
     workbookName: string
     pics: PicType[]
     prompts: PromptType[]
-}
-
-export type UserType = {
-    email: string
-    slug: string
-    workbooks: WorkbookType[]
 }

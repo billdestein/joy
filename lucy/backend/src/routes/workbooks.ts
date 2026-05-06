@@ -1,85 +1,100 @@
 import { Router, Request, Response } from 'express'
+import { WorkbookType } from '@billdestein/lucy-common'
 import { sessionMiddleware } from '../middleware/session'
-import { generateImage } from '../services/gemini'
 import * as workbookService from '../services/workbook-service'
+import * as geminiService from '../services/gemini'
 
-export const workbooksRouter = Router()
-workbooksRouter.use(sessionMiddleware)
+const router = Router()
 
-workbooksRouter.post('/create-workbook', async (req: Request, res: Response) => {
+router.use(sessionMiddleware)
+
+router.post('/create-workbook', async (req: Request, res: Response): Promise<void> => {
     try {
         const { workbookName } = req.body as { workbookName: string }
         await workbookService.createWorkbook(req.user!.slug, workbookName)
         res.status(200).end()
-    } catch {
+    } catch (err) {
+        console.error('create-workbook error:', err)
         res.status(500).json({ error: 'Failed to create workbook' })
     }
 })
 
-workbooksRouter.post('/delete-pic', async (req: Request, res: Response) => {
+router.post('/delete-pic', async (req: Request, res: Response): Promise<void> => {
     try {
-        const { workbook, picName } = req.body as { workbook: string; picName: string }
-        await workbookService.deletePic(req.user!.slug, workbook, picName)
+        const { workbook, picName } = req.body as { workbook: WorkbookType; picName: string }
+        await workbookService.deletePic(req.user!.slug, workbook.workbookName, picName)
         res.status(200).end()
-    } catch {
+    } catch (err) {
+        console.error('delete-pic error:', err)
         res.status(500).json({ error: 'Failed to delete pic' })
     }
 })
 
-workbooksRouter.post('/delete-workbook', async (req: Request, res: Response) => {
+router.post('/delete-workbook', async (req: Request, res: Response): Promise<void> => {
     try {
         const { workbookName } = req.body as { workbookName: string }
         await workbookService.deleteWorkbook(req.user!.slug, workbookName)
         res.status(200).end()
-    } catch {
+    } catch (err) {
+        console.error('delete-workbook error:', err)
         res.status(500).json({ error: 'Failed to delete workbook' })
     }
 })
 
-workbooksRouter.post('/generate-pic', async (req: Request, res: Response) => {
+router.post('/generate-pic', async (req: Request, res: Response): Promise<void> => {
     try {
-        const { workbook } = req.body as { workbook: string }
-        const wb = await workbookService.getWorkbook(req.user!.slug, workbook)
-        const focusedPrompt = wb.prompts.find(p => p.focused)
+        const { workbook } = req.body as { workbook: WorkbookType }
+        const focusedPrompt = workbook.prompts.find(p => p.focused)
         if (!focusedPrompt) {
-            return res.status(400).json({ error: 'No focused prompt found' })
+            res.status(400).json({ error: 'No focused prompt found' })
+            return
         }
-        const { data, mimeType } = await generateImage(focusedPrompt.text)
-        const updatedWorkbook = await workbookService.savePic(req.user!.slug, workbook, data, mimeType)
-        res.status(200).json({
-            workbook: updatedWorkbook,
-            image: data.toString('base64'),
-        })
-    } catch {
+
+        const { data, mimeType } = await geminiService.generateImage(focusedPrompt.text)
+        const updatedWorkbook = await workbookService.addGeneratedPic(
+            req.user!.slug,
+            workbook.workbookName,
+            data,
+            mimeType
+        )
+
+        res.json({ workbook: updatedWorkbook, image: data.toString('base64') })
+    } catch (err) {
+        console.error('generate-pic error:', err)
         res.status(500).json({ error: 'Failed to generate pic' })
     }
 })
 
-workbooksRouter.get('/get-workbook', async (req: Request, res: Response) => {
+router.get('/get-workbook', async (req: Request, res: Response): Promise<void> => {
     try {
         const workbookName = req.query.workbookName as string
         const workbook = await workbookService.getWorkbook(req.user!.slug, workbookName)
-        res.status(200).json(workbook)
-    } catch {
+        res.json(workbook)
+    } catch (err) {
+        console.error('get-workbook error:', err)
         res.status(500).json({ error: 'Failed to get workbook' })
     }
 })
 
-workbooksRouter.get('/list-workbooks', async (req: Request, res: Response) => {
+router.get('/list-workbooks', async (_req: Request, res: Response): Promise<void> => {
     try {
-        const workbooks = await workbookService.listWorkbooks(req.user!.slug)
-        res.status(200).json({ workbooks })
-    } catch {
+        const workbooks = await workbookService.listWorkbooks(_req.user!.slug)
+        res.json({ workbooks })
+    } catch (err) {
+        console.error('list-workbooks error:', err)
         res.status(500).json({ error: 'Failed to list workbooks' })
     }
 })
 
-workbooksRouter.post('/rename-pic', async (req: Request, res: Response) => {
+router.post('/rename-pic', async (req: Request, res: Response): Promise<void> => {
     try {
-        const { workbook, newPicName } = req.body as { workbook: string; newPicName: string }
-        await workbookService.renamePic(req.user!.slug, workbook, newPicName)
+        const { workbook, newPicName } = req.body as { workbook: WorkbookType; newPicName: string }
+        await workbookService.renamePic(req.user!.slug, workbook.workbookName, newPicName)
         res.status(200).end()
-    } catch {
+    } catch (err) {
+        console.error('rename-pic error:', err)
         res.status(500).json({ error: 'Failed to rename pic' })
     }
 })
+
+export default router

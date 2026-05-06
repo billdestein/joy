@@ -1,36 +1,39 @@
 import { Router, Request, Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
-import { getUserEmail } from '../services/cognito'
+import { getEmailFromAccessToken } from '../services/cognito'
+import { setSession } from '../services/redis'
 import { findOrCreateUser } from '../services/user-store'
-import { redis, SESSION_TTL } from '../services/redis'
+import { config } from '../config'
 
-export const authRouter = Router()
+const router = Router()
 
-authRouter.post('/login', async (req: Request, res: Response) => {
+router.post('/login', async (req: Request, res: Response): Promise<void> => {
     try {
         const authHeader = req.headers.authorization
         if (!authHeader) {
-            return res.status(401).json({ error: 'Missing authorization header' })
+            res.status(401).json({ error: 'Missing authorization header' })
+            return
         }
 
-        const accessToken = authHeader.startsWith('Bearer ')
-            ? authHeader.slice(7)
-            : authHeader
-
-        const email = await getUserEmail(accessToken)
-        findOrCreateUser(email)
+        const accessToken = authHeader.replace(/^Bearer\s+/i, '')
+        const email = await getEmailFromAccessToken(accessToken)
 
         const sessionId = uuidv4()
-        await redis.set(sessionId, email, 'EX', SESSION_TTL)
+        await setSession(sessionId, email)
+        findOrCreateUser(email)
 
-        res.cookie('sessionId', sessionId, {
+        res.cookie(config.sessionCookieName, sessionId, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: SESSION_TTL * 1000,
+            maxAge: config.sessionTtlSeconds * 1000,
+            sameSite: 'strict',
         })
 
         res.status(200).end()
-    } catch {
+    } catch (err) {
+        console.error('Login error:', err)
         res.status(401).json({ error: 'Authentication failed' })
     }
 })
+
+export default router

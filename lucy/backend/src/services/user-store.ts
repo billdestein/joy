@@ -1,19 +1,18 @@
-export type User = {
-    email: string
-    slug: string
-}
+import { UserType } from '@billdestein/lucy-common'
+
+const userMap = new Map<string, UserType>()
 
 function emailToSlug(email: string): string {
-    return email.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    return email.replace(/[@.]/g, '-').toLowerCase()
 }
 
-const userMap = new Map<string, User>()
-
-export function findOrCreateUser(email: string): User {
-    let user = userMap.get(email)
-    if (!user) {
-        user = { email, slug: emailToSlug(email) }
-        userMap.set(email, user)
+export function findOrCreateUser(email: string): UserType {
+    if (!userMap.has(email)) {
+        userMap.set(email, {
+            email,
+            slug: emailToSlug(email),
+            workbooks: []
+        })
     }
-    return user
+    return userMap.get(email)!
 }

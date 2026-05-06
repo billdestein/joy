@@ -6,14 +6,9 @@ First we need to define a domain specific language called Joy that will allow me
 
 Joy is exactly like Typescript with two special built-in functions.  These are 'learn' and 'execute'.
 
-Learn takes a single string argument, 'text'.  
-The text is an English description of some things I want you to know.  
-It's like a prompt with no instructions.
+Learn takes a single string argument, 'text'.  The text is an English description of some things I want you to know.  It's like a prompt with no instructions.
 
-Execute also takes a single string argument, 'text'.  
-The text is an English description of things I want you to do.  
-It's like a prompt with instructions.  
-The instructions are usually of the flavor 'generate code for ...'
+Execute also takes a single string argument, 'text'.  The text is an English description of things I want you to do.  It's like a prompt with instructions.  The instructions are usually of the flavor 'generate code for ...'
 
 Files written in Joy have a '.joy.ts' extension.  This allows us to use Typescript IDEs to edit Joy files.
 

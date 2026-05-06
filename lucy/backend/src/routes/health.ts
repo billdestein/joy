@@ -1,7 +1,9 @@
-import { Router } from 'express'
+import { Router, Request, Response } from 'express'
 
-export const healthRouter = Router()
+const router = Router()
 
-healthRouter.get('/check', (_req, res) => {
+router.get('/check', (_req: Request, res: Response): void => {
     res.status(200).end()
 })
+
+export default router

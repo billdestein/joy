@@ -1,24 +1,30 @@
 import { Request, Response, NextFunction } from 'express'
-import { redis } from '../services/redis'
+import { UserType } from '@billdestein/lucy-common'
+import { getEmailFromSession } from '../services/redis'
 import { findOrCreateUser } from '../services/user-store'
+import { config } from '../config'
 
 declare global {
     namespace Express {
         interface Request {
-            user?: { email: string; slug: string }
+            user?: UserType
         }
     }
 }
 
-export async function sessionMiddleware(req: Request, res: Response, next: NextFunction) {
-    const sessionId = req.cookies?.sessionId
+export async function sessionMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const sessionId = req.cookies?.[config.sessionCookieName]
     if (!sessionId) {
-        return res.status(401).json({ error: 'Unauthorized' })
+        res.status(401).json({ error: 'Unauthorized' })
+        return
     }
-    const email = await redis.get(sessionId)
+
+    const email = await getEmailFromSession(sessionId)
     if (!email) {
-        return res.status(401).json({ error: 'Session expired' })
+        res.status(401).json({ error: 'Session expired' })
+        return
     }
+
     req.user = findOrCreateUser(email)
     next()
 }
