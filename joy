@@ -12,4 +12,6 @@ Execute also takes a single string argument, 'text'.  The text is an English des
 
 Files written in Joy have a '.joy.ts' extension.  This allows us to use Typescript IDEs to edit Joy files.
 
+In a Joy program, descriptive text may include paths to files and paths to directories.  If a path starts with the string '/joy', then it's a path relative to where Claude is running.
+
 Please read and execute index.joy.ts in this directory.  It's written in Joy.
