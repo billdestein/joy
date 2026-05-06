@@ -3,9 +3,9 @@
 //----------------------------------------------------------------------------------------------------
 export const architecture = `
 
-Toolbox is a tool for generating, mutating and combining images.
+Lucy is a tool for generating, mutating and combining images.
 
-The code for Toolbox will be organized within a mono-repo called @billdestein/claude-toolbox.  
+The code for Lucy will be organized within a mono-repo called @billdestein/joy.  
 
 The mono-repo will have four sub-repos: frontend, frames, backend, and common.
 
@@ -39,5 +39,5 @@ Under the user's directory is a directory for each of the user's workbooks.
 
 Each workbook directory has a single workbook.json file, and some number of image files.
 
-Initially, Toolbox supports jpeg and png image files.
+Initially, Lucy supports jpeg and png image files.
 `
