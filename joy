@@ -15,6 +15,6 @@ The text is an English description of things I want you to do.
 It's like a prompt with instructions.  
 The instructions are usually of the flavor 'generate code for ...'
 
-Files written in Joy hava a '.joy.ts' extension.  This allows us to use Typesecipt IDEs to edit Joy files.
+Files written in Joy have a '.joy.ts' extension.  This allows us to use Typescript IDEs to edit Joy files.
 
 Please read and execute index.joy.ts in this directory.  It's written in Joy.
