@@ -1,10 +1,10 @@
 
-export function execute(text: string): void {
+export function joyExecute(text: string): void {
     // @ts-ignore
     execute(text)
 }
 
-export function learn(text: string): void {
+export function joyLearn(text: string): void {
     // @ts-ignore
     learn(text)
 }

@@ -5,6 +5,9 @@ export const common = `
 
 The common repo is used by both the frontend and backend repos.  It defines three types defined in the common repo.
 
+The package name for the common repo is @billdestein/joy-common
+
+
 The UserType has many workbooks.  A user is identified by a slug of its email address.  The slug is also the name of the user's root directory.
 
 export type UserType = {

@@ -1,15 +1,8 @@
 {
   "name": "@billdestein/joy-common",
-  "version": "0.0.1",
-  "type": "module",
+  "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
   "scripts": {
     "build": "tsc"
   },

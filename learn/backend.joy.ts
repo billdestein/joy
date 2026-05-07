@@ -2,6 +2,9 @@
 // backend
 //----------------------------------------------------------------------------------------------------
 export const backend = `
+
+The package name is @billdestein/lucy-backend
+
 The backend uses:
 
 - AWS SDK for Cognito
@@ -10,7 +13,31 @@ The backend uses:
 - Node 
 - Typescript
 
+The backend repo contains a startup script that reads a configuration file from the filesystem,
+assigns environment variables, and then starts the express server.
+
+When running in local mode, the startup script reads the file ~/.lucy-config/BackendLocalConfig.json.
+When running in prod mode, the startup script reads the file ~/.lucy-config/BackendProdConfig.json.
+
+Both files contains a single json object with thse properties:
+
+- COGNITO_REGION
+- COGNITO_USER_POOL_ID
+- GOOGLE_API_KEY
+- MOUNT_DIR
+- ORIGIN
+- REDIS_HOST
+- REDIS_PORT
+
+Each is assigned to en environment variable with the same name.
+
+The backend server listens on port 8080.
+
 The backend code has a map of email to User object.
+
+The user object has only two properties:
+    - email: string
+    - slug: string
 
 All of the this happens in the login endpoint:
 - The login endpoint receives an authorization header that contains the Cognito access token.  
@@ -83,7 +110,7 @@ Endpoint: /v1/workbooks/generate-pic (POST)
 
 Endpoint: /v1/workbooks/get-workbook (GET)
   - Input:
-    - workbookName: string
+    - workbookName: string (passed as a query param)
   - Processing
     - None
   - Output:
@@ -107,4 +134,13 @@ The pic being renamed is always named 'unnamed', so it is not passed as an input
     - Rename pic within the workbook.json
   - Output
     - None
+
+Some miscellaneous stuff:
+
+The backend uses the standard redis client library -- not ioredis
+
+The path for workbooks is: MOUNT_DIR/users/{slug}/{workbookName}/
+
+The backend uses Google's Imagegen API
+
 `
