@@ -88,12 +88,29 @@ function setupResize(frame: HTMLDivElement, el: HTMLElement, dir: ResizeDir): ()
     }
 }
 
+let tooltipStyleInjected = false
+
+function ensureTooltipStyle() {
+    if (tooltipStyleInjected) return
+    tooltipStyleInjected = true
+    const s = document.createElement('style')
+    s.textContent = [
+        '.frame-btn{position:relative}',
+        '.frame-btn::after{content:attr(data-tooltip);position:absolute;bottom:calc(100% + 4px);right:0;',
+        'background:#222;color:#ddd;font-size:11px;padding:2px 6px;border-radius:3px;',
+        'white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:1000}',
+        '.frame-btn:hover::after{opacity:1}',
+    ].join('')
+    document.head.appendChild(s)
+}
+
 export function Frame({ id, height, width, x = 0, y = 0, zIndex, message, isModal = false, children, buttons }: FrameProps) {
     const frameRef = useRef<HTMLDivElement>(null)
     const backdropRef = useRef<HTMLElement | null>(null)
     const [removed, setRemoved] = useState(false)
 
     useEffect(() => {
+        ensureTooltipStyle()
         Canvas.registerFrame(id, () => setRemoved(true))
         return () => Canvas.unregisterFrame(id)
     }, [id])
@@ -219,7 +236,7 @@ export function Frame({ id, height, width, x = 0, y = 0, zIndex, message, isModa
                     <button
                         key={i}
                         className="frame-btn"
-                        title={btn.tooltip}
+                        data-tooltip={btn.tooltip}
                         onClick={btn.handler}
                         style={{
                             background: 'transparent',
