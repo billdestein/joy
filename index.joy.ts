@@ -4,6 +4,7 @@ import { architecture } from './learn/architecture.joy.ts'
 import { backend } from './learn/backend.joy.ts'
 import { common } from './learn/common.joy.ts'
 import { backendTest } from './learn/backend-test.joy.ts'
+import { frames } from './learn/frames.joy.ts'
 import { frontend } from './learn/frontend.joy.ts'
 
 learn(architecture)
@@ -24,4 +25,10 @@ learn(frontend)
 
 // execute(`create the 'lucy/backend-test' subdirectory, and build the backend-test repo in it.`)
 
-execute(`delete and recreate the 'lucy/frontend' subdirectory, and build the frontend repo in it.`)
+// execute(`delete and recreate the 'lucy/frontend' subdirectory, and build the frontend repo in it.`)
+
+execute(`
+    delete and recreate the 'lucy/frontend/frames' subdirectory, 
+    and build the frames library in it.
+`)
+

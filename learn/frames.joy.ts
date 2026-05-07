@@ -1,16 +1,20 @@
-# Toolbox
+//----------------------------------------------------------------------------------------------------
+// frames
+//----------------------------------------------------------------------------------------------------
+export const frames = `
 
-Hello Claude,
+Frames is a Typescript library that implements a windowing system for React.
 
-Today we're going to be developing a windowing system for React.  The system is called react-better-frames.  
+The idea is that we want to have a single main react app.  The main react has a div, 
+usually a large div, that we call the canvas.  Within the canvas, we can have multiple 'Frames'.  
+A frame is a div that can be dragged and resized through mouse gestures.  When there are two 
+or more frames on the canvas, the frams can be stacked and restacked (using z-index).
 
-The system is coded in Typescript.
+Inside the react-better-frames system is a singleton called Canvas.  Canvas coordinates the 
+frames within it.  Canvas has functions to add and remove frames.  
 
-The idea is that we want to have a single main react app.  The main react has a div, usually a large div, that we call the canvas.  Within the canvas, we can have multiple 'Frames'.  A frame is a div that can be dragged and resized through mouse gestures.  When there are two or more frames on the canvas, the frams can be stacked and restacked (using z-index).
-
-Inside the react-better-frames system is a singleton called Canvas.  Canvas coordinates the frames within it.  Canvas has functions to add and remove frames.  
-
-Inside the react-better-frames system is a React component called Frame.  The Frame is a JSX parent and has children.  Those children form what is called an 'applet'.
+Inside the react-better-frames system is a React component called Frame.  
+The Frame is a JSX parent and has children.  Those children form what is called an 'applet'.
 
 The Frame has this layout:
 
@@ -40,13 +44,4 @@ When moving a frame left and right, they will be clipped by the canvas, but neve
 
 The frame can only be move down to the point where the bottom of the header touches the bottom of the canvas.
 
-Create the react-better-frames system in this directory
-
-Create a demo React app that uses the react-better-frames system.  The demo app creates a canvas and two frames.  The frames can be dragged, resized and restacked.  One frame has a button that opens a modal frame.  The modal frame shows text "Hello World", and has an 'ok' button that tells the moodal applet to remove itself from the Canvas.
-
-
-
-
-
-
-
+`
