@@ -5,7 +5,7 @@ import {
     CognitoUserPool,
 } from 'amazon-cognito-identity-js'
 import type { CognitoUserSession } from 'amazon-cognito-identity-js'
-import { Canvas, Frame } from 'react-better-frames'
+import { Canvas, Frame, useFrameMessage } from 'react-better-frames'
 
 type WorkbookType = {
     workbookName: string
@@ -87,6 +87,24 @@ function ImageApplet({ prompt, workbookName }: { prompt: string; workbookName: s
             style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
             alt={prompt}
         />
+    )
+}
+
+function ModalContent() {
+    const close = useFrameMessage<() => void>()
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16, padding: 24 }}>
+            <div style={{ fontSize: 16, color: 'gold' }}>Modal Frame Demo</div>
+            <div style={{ fontSize: 13, color: '#aaa', textAlign: 'center' }}>
+                This frame is modal — it blocks interaction with the canvas behind it.
+            </div>
+            <button
+                style={{ padding: '6px 20px', background: '#000', color: 'gold', border: '1px solid gold', borderRadius: 3, cursor: 'pointer', fontSize: 13 }}
+                onClick={close}
+            >
+                Close
+            </button>
+        </div>
     )
 }
 
@@ -185,6 +203,7 @@ function LoginModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: ()
 export default function App() {
     const [loggedIn, setLoggedIn] = useState(false)
     const [showLogin, setShowLogin] = useState(false)
+    const [showModal, setShowModal] = useState(false)
 
     const canvasRef = useCallback((el: HTMLDivElement | null) => {
         if (el) Canvas.init(el)
@@ -219,6 +238,12 @@ export default function App() {
                 <button style={{ padding: '4px 14px', background: '#000', color: '#ccc', border: '1px solid #444', borderRadius: 3, cursor: 'pointer', fontSize: 13 }}>
                     New Workbook
                 </button>
+                <button
+                    style={{ padding: '4px 14px', background: '#000', color: 'gold', border: '1px solid #555', borderRadius: 3, cursor: 'pointer', fontSize: 13 }}
+                    onClick={() => setShowModal(true)}
+                >
+                    Modal Demo
+                </button>
             </div>
             <div ref={canvasRef} style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#0a0a15' }}>
                 <Frame height={420} width={480} x={40} y={30} title="Dog">
@@ -227,6 +252,11 @@ export default function App() {
                 <Frame height={420} width={480} x={560} y={30} title="Cat">
                     <ImageApplet prompt="Show me a cat" workbookName="frames-cat" />
                 </Frame>
+                {showModal && (
+                    <Frame height={220} width={360} isModal message={() => setShowModal(false)}>
+                        <ModalContent />
+                    </Frame>
+                )}
             </div>
         </div>
     )
