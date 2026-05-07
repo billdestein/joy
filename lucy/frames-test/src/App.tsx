@@ -1,10 +1,94 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
     AuthenticationDetails,
     CognitoUser,
     CognitoUserPool,
 } from 'amazon-cognito-identity-js'
 import type { CognitoUserSession } from 'amazon-cognito-identity-js'
+import { Canvas, Frame } from 'react-better-frames'
+
+type WorkbookType = {
+    workbookName: string
+    pics: { createdAt: number; filename: string; mimeType: string }[]
+    prompts: { createdAt: number; focused: boolean; text: string }[]
+}
+
+function Spinner() {
+    return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%' }}>
+            <div style={{
+                width: 40,
+                height: 40,
+                border: '3px solid #333',
+                borderTopColor: 'gold',
+                borderRadius: '50%',
+                animation: 'spin 0.8s linear infinite',
+            }} />
+            <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+        </div>
+    )
+}
+
+function ImageApplet({ prompt, workbookName }: { prompt: string; workbookName: string }) {
+    const [imageSrc, setImageSrc] = useState<string | null>(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        let cancelled = false
+
+        async function generate() {
+            try {
+                await fetch('/v1/workbooks/create-workbook', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ workbookName }),
+                })
+
+                const workbook: WorkbookType = {
+                    workbookName,
+                    pics: [],
+                    prompts: [{ createdAt: Date.now(), focused: true, text: prompt }],
+                }
+
+                const res = await fetch('/v1/workbooks/generate-pic', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ workbook }),
+                })
+
+                if (!res.ok) throw new Error(`Generate failed: ${res.status}`)
+                const data = await res.json() as { workbook: WorkbookType; image: string }
+                const mimeType = data.workbook.pics[data.workbook.pics.length - 1]?.mimeType ?? 'image/png'
+
+                if (!cancelled) {
+                    setImageSrc(`data:${mimeType};base64,${data.image}`)
+                    setLoading(false)
+                }
+            } catch (e) {
+                if (!cancelled) {
+                    setError(e instanceof Error ? e.message : 'Failed to generate image')
+                    setLoading(false)
+                }
+            }
+        }
+
+        generate()
+        return () => { cancelled = true }
+    }, [prompt, workbookName])
+
+    if (loading) return <Spinner />
+    if (error) return <div style={{ color: '#c88', padding: 12, fontSize: 13 }}>{error}</div>
+    return (
+        <img
+            src={imageSrc!}
+            style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+            alt={prompt}
+        />
+    )
+}
 
 function LoginModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
     const [email, setEmail] = useState('')
@@ -99,32 +183,51 @@ function LoginModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: ()
 }
 
 export default function App() {
-    const [showLogin, setShowLogin] = useState(false)
     const [loggedIn, setLoggedIn] = useState(false)
+    const [showLogin, setShowLogin] = useState(false)
 
-    return (
-        <div style={{ width: '100vw', height: '100vh', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-            <div style={{ position: 'absolute', top: 16, right: 20 }}>
-                {loggedIn ? (
-                    <span style={{ color: '#888', fontSize: 13 }}>Signed in</span>
-                ) : (
+    const canvasRef = useCallback((el: HTMLDivElement | null) => {
+        if (el) Canvas.init(el)
+    }, [])
+
+    if (!loggedIn) {
+        return (
+            <div style={{ width: '100vw', height: '100vh', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: 16, right: 20 }}>
                     <button
                         style={{ padding: '6px 18px', background: '#000', color: 'gold', border: '1px solid gold', borderRadius: 3, cursor: 'pointer', fontSize: 13 }}
                         onClick={() => setShowLogin(true)}
                     >
                         Sign In
                     </button>
+                </div>
+                <span style={{ color: 'gold', fontSize: 80, fontWeight: 700, letterSpacing: 10 }}>Lucy</span>
+                {showLogin && (
+                    <LoginModal
+                        onClose={() => setShowLogin(false)}
+                        onSuccess={() => { setLoggedIn(true); setShowLogin(false) }}
+                    />
                 )}
             </div>
+        )
+    }
 
-            <span style={{ color: 'gold', fontSize: 80, fontWeight: 700, letterSpacing: 10 }}>Lucy</span>
-
-            {showLogin && (
-                <LoginModal
-                    onClose={() => setShowLogin(false)}
-                    onSuccess={() => { setLoggedIn(true); setShowLogin(false) }}
-                />
-            )}
+    return (
+        <div style={{ width: '100vw', height: '100vh', background: '#000', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ height: 48, background: '#111', borderBottom: '1px solid #2a2a2a', display: 'flex', alignItems: 'center', padding: '0 16px', gap: 12, flexShrink: 0 }}>
+                <span style={{ color: 'gold', fontWeight: 700, fontSize: 15, letterSpacing: 2, marginRight: 16 }}>Lucy</span>
+                <button style={{ padding: '4px 14px', background: '#000', color: '#ccc', border: '1px solid #444', borderRadius: 3, cursor: 'pointer', fontSize: 13 }}>
+                    New Workbook
+                </button>
+            </div>
+            <div ref={canvasRef} style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#0a0a15' }}>
+                <Frame height={420} width={480} x={40} y={30} title="Dog">
+                    <ImageApplet prompt="Show me a dog" workbookName="frames-dog" />
+                </Frame>
+                <Frame height={420} width={480} x={560} y={30} title="Cat">
+                    <ImageApplet prompt="Show me a cat" workbookName="frames-cat" />
+                </Frame>
+            </div>
         </div>
     )
 }
