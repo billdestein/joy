@@ -90,7 +90,17 @@ async function generatePic(workbook: WorkbookType, prompt: string): Promise<Work
     })
     if (!res.ok) throw new Error(`Generate pic failed: ${res.status}`)
     const data = await res.json() as { workbook: WorkbookType; image: string }
-    console.log(`Generate pic '${prompt}': OK (${data.workbook.pics.length} pics)`)
+    if (data.image) {
+        const outDir = '/Users/bill/tmp'
+        fs.mkdirSync(outDir, { recursive: true })
+        const latestPic = data.workbook.pics[data.workbook.pics.length - 1]
+        const filename = latestPic?.filename ?? `pic-${Date.now()}.png`
+        const outPath = path.join(outDir, filename)
+        fs.writeFileSync(outPath, Buffer.from(data.image, 'base64'))
+        console.log(`Generate pic '${prompt}': OK (${data.workbook.pics.length} pics) -> ${outPath}`)
+    } else {
+        console.log(`Generate pic '${prompt}': OK (${data.workbook.pics.length} pics)`)
+    }
     return data.workbook
 }
 
