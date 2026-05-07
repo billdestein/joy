@@ -96,10 +96,8 @@ export function Frame({ height, width, x = 0, y = 0, zIndex, message, isModal = 
         const frame = frameRef.current
         if (!frame) return
 
-        // Assign z-index
         frame.style.zIndex = String(zIndex ?? Canvas.nextZIndex())
 
-        // Modal: insert backdrop, then raise frame above it, then center
         if (isModal) {
             const backdrop = Canvas.addModalBackdrop()
             backdropRef.current = backdrop
@@ -111,11 +109,9 @@ export function Frame({ height, width, x = 0, y = 0, zIndex, message, isModal = 
             }
         }
 
-        // Bring to front on any mousedown on the frame
         const onFrameDown = () => Canvas.bringToFront(frame)
         frame.addEventListener('mousedown', onFrameDown)
 
-        // Drag via header
         const header = frame.querySelector<HTMLElement>('.frame-header')!
         let dragging = false
         let dx0 = 0, dy0 = 0, fx0 = 0, fy0 = 0
@@ -135,16 +131,15 @@ export function Frame({ height, width, x = 0, y = 0, zIndex, message, isModal = 
             const fw = frame.offsetWidth
             const cw = canvasEl.clientWidth
             const ch = canvasEl.clientHeight
-            // bottom of header = top of frame + BORDER + HEADER_H
             const headerBottom = BORDER + HEADER_H
 
             let nx = fx0 + (e.clientX - dx0)
             let ny = fy0 + (e.clientY - dy0)
 
-            ny = Math.max(0, ny)                          // top of frame never above canvas top
-            ny = Math.min(ny, ch - headerBottom)          // header bottom never below canvas bottom
-            nx = Math.max(-(fw - 40), nx)                 // at least 40px visible on left
-            nx = Math.min(nx, cw - 40)                    // at least 40px visible on right
+            ny = Math.max(0, ny)
+            ny = Math.min(ny, ch - headerBottom)
+            nx = Math.max(-(fw - 40), nx)
+            nx = Math.min(nx, cw - 40)
 
             frame.style.left = `${nx}px`
             frame.style.top  = `${ny}px`
@@ -156,9 +151,8 @@ export function Frame({ height, width, x = 0, y = 0, zIndex, message, isModal = 
         document.addEventListener('mousemove', onDragMove)
         document.addEventListener('mouseup', onDragUp)
 
-        // Resize via grab bars
-        const resizeCleanups: Array<() => void> = [];
-        (['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'] as ResizeDir[]).forEach(dir => {
+        const resizeCleanups: Array<() => void> = []
+        ;(['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'] as ResizeDir[]).forEach(dir => {
             const el = frame.querySelector<HTMLElement>(`.grab-${dir}`)
             if (el) resizeCleanups.push(setupResize(frame, el, dir))
         })
@@ -188,15 +182,12 @@ export function Frame({ height, width, x = 0, y = 0, zIndex, message, isModal = 
                 userSelect: 'none',
             }}
         >
-            {/* Background + border */}
             <div style={{ position: 'absolute', inset: 0, background: '#1e1e2e', border: '1px solid #484860', borderRadius: 3 }} />
 
-            {/* Resize grab bars (hidden, sit in the 5px border zone) */}
             {(['nw','n','ne','w','e','sw','s','se'] as ResizeDir[]).map(d => (
                 <div key={d} className={`grab-${d}`} style={grabStyle(d)} />
             ))}
 
-            {/* Header / drag bar */}
             <div
                 className="frame-header"
                 style={{
@@ -219,7 +210,6 @@ export function Frame({ height, width, x = 0, y = 0, zIndex, message, isModal = 
                 {title ?? ''}
             </div>
 
-            {/* Applet content */}
             <MessageContext.Provider value={message}>
                 <div
                     style={{

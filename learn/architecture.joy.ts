@@ -7,7 +7,12 @@ Lucy is a tool for generating, mutating and combining images.
 
 The code for Lucy will be organized within a mono-repo called @billdestein/joy.  
 
-The mono-repo will have four sub-repos: backend, backend-test, common and frontend
+The mono-repo will have these sub-repos: 
+    - backend
+    - backend-test
+    - common
+    - frontend
+    - frames-test
 
 The frontend code will use Vite, Typescript and React.
 
@@ -15,11 +20,7 @@ The backend code will use Typescript, Node, Express and AWS Cognito.
 
 The common code will use Typescript.
 
-The frames code will use Typescript and React.  It implements a single react component.  The react component is a windowing system where each window runs a react 'applet'.
-
 Redis is used for the session id store.
-
-Initially we'll work on the common and backend repos.
 
 ## The architecture
 
