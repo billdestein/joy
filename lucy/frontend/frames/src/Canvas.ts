@@ -1,6 +1,7 @@
 class CanvasManager {
     private el: HTMLElement | null = null
     private zCounter = 100
+    private frameCallbacks = new Map<string, () => void>()
 
     init(el: HTMLElement): void {
         this.el = el
@@ -16,6 +17,22 @@ class CanvasManager {
 
     bringToFront(frameEl: HTMLElement): void {
         frameEl.style.zIndex = String(++this.zCounter)
+    }
+
+    registerFrame(id: string, callback: () => void): void {
+        this.frameCallbacks.set(id, callback)
+    }
+
+    unregisterFrame(id: string): void {
+        this.frameCallbacks.delete(id)
+    }
+
+    removeFrame(id: string): void {
+        const cb = this.frameCallbacks.get(id)
+        if (cb) {
+            this.frameCallbacks.delete(id)
+            cb()
+        }
     }
 
     addModalBackdrop(): HTMLElement {

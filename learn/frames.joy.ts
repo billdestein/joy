@@ -24,6 +24,9 @@ The Frame has this layout:
 - Around the applet and the header is a five-pixel border
 - Hidden within  the border are eight hidden grab bars used for sizing: NW, N, NE, W, E, SW, S and SE.
 
+The frame header contains zero or more right-aligned buttons.  Each button has a configurable 
+svg icon, handler function, and tool tip label.
+
 The Frame has these props:
 
 - initial height in pixels
@@ -33,6 +36,8 @@ The Frame has these props:
 - initial z-index.  Z index values are unique and monotonically increasing.
 - a 'message' which is an opaque object passed from a parent frame to a child frame.
 - isModal is a boolean that defaults to false.  
+- id is the Canvas's unique id for the frame.  It is passed to the canvas when removing a frame. 
+- An array of button objects.
 
 When the Canvas adds a new modal frame, it first adds inserts a div into the dom that we call the click catcher div.  The click catcher is translucent and covers the entire canvas.  Then the Canvas adds the modal frame centered in the canvas both horizontally and vertically.  The x and y props are ignored.
 

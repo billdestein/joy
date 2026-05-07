@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Canvas } from './Canvas'
 import type { FrameProps } from './types'
@@ -88,9 +88,15 @@ function setupResize(frame: HTMLDivElement, el: HTMLElement, dir: ResizeDir): ()
     }
 }
 
-export function Frame({ height, width, x = 0, y = 0, zIndex, message, isModal = false, title, children }: FrameProps) {
+export function Frame({ id, height, width, x = 0, y = 0, zIndex, message, isModal = false, children, buttons }: FrameProps) {
     const frameRef = useRef<HTMLDivElement>(null)
     const backdropRef = useRef<HTMLElement | null>(null)
+    const [removed, setRemoved] = useState(false)
+
+    useEffect(() => {
+        Canvas.registerFrame(id, () => setRemoved(true))
+        return () => Canvas.unregisterFrame(id)
+    }, [id])
 
     useEffect(() => {
         const frame = frameRef.current
@@ -117,6 +123,7 @@ export function Frame({ height, width, x = 0, y = 0, zIndex, message, isModal = 
         let dx0 = 0, dy0 = 0, fx0 = 0, fy0 = 0
 
         const onHeaderDown = (e: MouseEvent) => {
+            if ((e.target as Element).closest('.frame-btn')) return
             dragging = true
             dx0 = e.clientX
             dy0 = e.clientY
@@ -170,6 +177,8 @@ export function Frame({ height, width, x = 0, y = 0, zIndex, message, isModal = 
         }
     }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+    if (removed) return null
+
     return (
         <div
             ref={frameRef}
@@ -200,14 +209,33 @@ export function Frame({ height, width, x = 0, y = 0, zIndex, message, isModal = 
                     cursor: 'grab',
                     display: 'flex',
                     alignItems: 'center',
-                    paddingLeft: 8,
-                    fontSize: 12,
-                    color: '#9090b0',
+                    justifyContent: 'flex-end',
+                    paddingRight: 2,
                     borderRadius: '2px 2px 0 0',
                     borderBottom: '1px solid #383858',
                 }}
             >
-                {title ?? ''}
+                {buttons?.map((btn, i) => (
+                    <button
+                        key={i}
+                        className="frame-btn"
+                        title={btn.tooltip}
+                        onClick={btn.handler}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: '#9090b0',
+                            padding: '0 6px',
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            lineHeight: 1,
+                        }}
+                    >
+                        {btn.icon}
+                    </button>
+                ))}
             </div>
 
             <MessageContext.Provider value={message}>

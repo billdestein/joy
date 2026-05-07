@@ -1,6 +1,13 @@
 import type { ReactNode } from 'react'
 
+export type FrameButton = {
+    icon: ReactNode
+    handler: () => void
+    tooltip: string
+}
+
 export type FrameProps = {
+    id: string
     height: number
     width: number
     x?: number
@@ -8,6 +15,6 @@ export type FrameProps = {
     zIndex?: number
     message?: unknown
     isModal?: boolean
-    title?: string
     children?: ReactNode
+    buttons?: FrameButton[]
 }

@@ -42,11 +42,11 @@ learn(framesTest)
 //     and build the backend-test repo in it.
 // `)
 
-// // frames
-// execute(`
-//     delete and recreate the 'lucy/frontend/frames' subdirectory, 
-//     and build the frames library in it.
-// `)
+// frames
+execute(`
+    delete and recreate the 'lucy/frontend/frames' subdirectory, 
+    and build the frames library in it.
+`)
 
 // frames-test
 execute(`

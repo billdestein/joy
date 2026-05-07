@@ -6,11 +6,25 @@ import {
 } from 'amazon-cognito-identity-js'
 import type { CognitoUserSession } from 'amazon-cognito-identity-js'
 import { Canvas, Frame, useFrameMessage } from 'react-better-frames'
+import type { FrameButton } from 'react-better-frames'
 
 type WorkbookType = {
     workbookName: string
     pics: { createdAt: number; filename: string; mimeType: string }[]
     prompts: { createdAt: number; focused: boolean; text: string }[]
+}
+
+function CloseIcon() {
+    return (
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+            <line x1="1" y1="1" x2="11" y2="11" />
+            <line x1="11" y1="1" x2="1" y2="11" />
+        </svg>
+    )
+}
+
+function closeButtons(id: string): FrameButton[] {
+    return [{ icon: <CloseIcon />, handler: () => Canvas.removeFrame(id), tooltip: 'close' }]
 }
 
 function Spinner() {
@@ -246,14 +260,14 @@ export default function App() {
                 </button>
             </div>
             <div ref={canvasRef} style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#0a0a15' }}>
-                <Frame height={420} width={480} x={40} y={30} title="Dog">
+                <Frame id="dog" height={420} width={480} x={40} y={30} buttons={closeButtons('dog')}>
                     <ImageApplet prompt="Show me a dog" workbookName="frames-dog" />
                 </Frame>
-                <Frame height={420} width={480} x={560} y={30} title="Cat">
+                <Frame id="cat" height={420} width={480} x={560} y={30} buttons={closeButtons('cat')}>
                     <ImageApplet prompt="Show me a cat" workbookName="frames-cat" />
                 </Frame>
                 {showModal && (
-                    <Frame height={220} width={360} isModal message={() => setShowModal(false)}>
+                    <Frame id="modal" height={220} width={360} isModal message={() => setShowModal(false)}>
                         <ModalContent />
                     </Frame>
                 )}

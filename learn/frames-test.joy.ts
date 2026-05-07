@@ -20,6 +20,9 @@ One uses the prompt, "Show me a dog".  The other uses the prompt "Show me a cat"
 The image returned is shown in the applet.  While waiting for Gemini to 
 generate the image, the applet shows some sort of spinner.
 
+Both frames have a single button.  The icon is an 'x'.  The handler function calls the canvas
+to remove the frame.  The tooltip label is 'close'.
+
 The user can demonstrate that the frames are draggable, resizable, stackable and restackable.
 
 There is a button demonstrates a simple modal frame.
