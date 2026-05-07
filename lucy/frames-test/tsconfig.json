@@ -13,9 +13,6 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "strict": true,
-    "paths": {
-      "react-better-frames": ["../frontend/frames/src/index.ts"]
-    }
   },
   "include": ["src"]
 }
