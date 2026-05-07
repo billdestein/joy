@@ -29,7 +29,9 @@ read and execute the file 'joy' in this directory
 
 # Claude's thoughts on Joy:
 
-I asked Claude this: I've invented a domain specific language called Joy.  Joy is used to orchestrate LLM code generation.  In this Git repo, I'm using Joy to create a chatbot called Lucy. Please take a look and share your thooughts.
+This morning (5/7/2026) I prompted Claude with this: 
+
+I've invented a domain specific language called Joy.  Joy is used to orchestrate LLM code generation.  In this Git repo, I'm using Joy to create a chatbot called Lucy. Please take a look and share your thooughts.
 
 Claude replied:
 
