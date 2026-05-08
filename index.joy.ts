@@ -4,7 +4,8 @@ import { architecture } from './learn/architecture.joy.ts'
 import { backend } from './learn/backend.joy.ts'
 import { common } from './learn/common.joy.ts'
 // import { backendTest } from './learn/backend-test.joy.ts'
-// import { frames } from './learn/frames.joy.ts'
+import { frames } from './learn/frames.joy.ts'
+import { WorkbookListApplet } from './learn/workbook-list-applet.ts'
 // import { framesTest } from './learn/frames-test.joy.ts'
 import { frontend } from './learn/frontend.joy.ts'
 
@@ -25,7 +26,7 @@ learn(backend)
 
 learn(common)
 
-// learn(frames)
+learn(frames)
 
 // learn(framesTest)
 
@@ -33,7 +34,13 @@ learn(frontend)
 
 execute(`
     before proceeding, let me know if everything makes sense and if you have enough 
-    details to build the backend repo, the common repo, and frontend repo')
+    details to build:
+
+    - the backend repo, 
+    - the common repo, 
+    - the frames library,
+    - the WorkbookListApplet,
+    - the frontend repo
 `)
 
 // common
@@ -69,7 +76,13 @@ execute(`
 
 // frontend
 execute(`
-    create the 'lucy/frontend' subdirectory, and build the frontend repo in it.
+    delete and recreate the 'lucy/frontend' directory, and create the frontend repo in it.
+    create a script, lucy/frontend/start.sh, that I can use to start the frontend server in dev mode.
+ `)
+
+// frontend
+execute(`
+    delete and recreate the 'lucy/frontend' subdirectory, and build the frontend repo in it.
     create a script, lucy/frontend/start.sh, that I can use to start the frontend server in dev mode.
  `)
 

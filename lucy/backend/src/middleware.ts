@@ -2,15 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import { getEmailFromSession } from './session'
 import { findOrCreateUser } from './user'
 
-declare global {
-    namespace Express {
-        interface Request {
-            user?: { email: string; slug: string }
-        }
-    }
-}
-
-export async function sessionMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function authMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
     const sessionId = req.cookies?.sessionId
     if (!sessionId) {
         res.status(401).json({ error: 'Unauthorized' })
@@ -18,9 +10,9 @@ export async function sessionMiddleware(req: Request, res: Response, next: NextF
     }
     const email = await getEmailFromSession(sessionId)
     if (!email) {
-        res.status(401).json({ error: 'Session expired' })
+        res.status(401).json({ error: 'Unauthorized' })
         return
     }
-    req.user = findOrCreateUser(email)
+    res.locals.user = findOrCreateUser(email)
     next()
 }

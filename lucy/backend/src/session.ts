@@ -1,26 +1,21 @@
 import { createClient } from 'redis'
-import { v4 as uuidv4 } from 'uuid'
+import crypto from 'crypto'
 
-const SESSION_TTL_SECONDS = 3600
+let client: ReturnType<typeof createClient>
 
-let redisClient: ReturnType<typeof createClient>
-
-export async function initRedis(): Promise<void> {
-    redisClient = createClient({
-        socket: {
-            host: process.env.REDIS_HOST!,
-            port: parseInt(process.env.REDIS_PORT!, 10),
-        },
-    })
-    await redisClient.connect()
+export async function initRedis(host: string, port: number): Promise<void> {
+    client = createClient({ socket: { host, port } })
+    await client.connect()
 }
 
-export async function createSession(email: string): Promise<string> {
-    const sessionId = uuidv4()
-    await redisClient.set(sessionId, email, { EX: SESSION_TTL_SECONDS })
-    return sessionId
+export function generateSessionId(): string {
+    return crypto.randomBytes(32).toString('hex')
+}
+
+export async function setSession(sessionId: string, email: string): Promise<void> {
+    await client.set(sessionId, email, { EX: 3600 })
 }
 
 export async function getEmailFromSession(sessionId: string): Promise<string | null> {
-    return redisClient.get(sessionId)
+    return client.get(sessionId)
 }

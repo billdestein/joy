@@ -20,16 +20,32 @@ properties:
 The startup script assigns those values to their corresponding VITE environment
 variables before starting the frontend server.
 
+The frontend repo has directory src/Frames that contains the Frames library in it.
+
+The frontend repo has file src/WorkbookListApplet that holds the WorkbookListApplet code.
+
 Initially, frontend shows an all black window with the word "Lucy" centered in the window
 in color gold.  And there's a signin button in the upper right that initiates Cognito login.
 
-Once logged in, frontend shows an all blue window with the word "Welcome Bill" centered in the window
-in color white.
+Once loggedin, the frontend has a button row across the window.  The remainder of the 
+vertical space is the canvas.
+
+One button in the button row is has label "Workbooks".  When clicked, it adds a 
+WorkbookListApplet to the canvas.
 
 The OIDC scope must be 'openid email' — do not include 'profile', as Cognito does not enable
 it by default and it will cause an invalid_scope error.
+
+After a successful OIDC login, the frontend calls /v1/auth/login with the ID token
+(auth.user.id_token), not the access token (auth.user.access_token).
+Using the access token would fail because the Cognito GetUser API requires the
+aws.cognito.signin.user.admin scope, which is not granted under 'openid email'.
 
 The Cognito app client must have http://localhost:5173 registered as an allowed callback URL
 for local development.
 
 `
+
+// Once logged in, frontend shows an all blue window with the word "Welcome Bill" centered in the window
+// in color white.
+

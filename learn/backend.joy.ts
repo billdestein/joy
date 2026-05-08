@@ -7,10 +7,10 @@ The package name is @billdestein/lucy-backend
 
 The backend uses:
 
-- AWS SDK for Cognito
 - Express
 - Google Gemini SDK
-- Node 
+- jose (for JWT verification)
+- Node
 - Typescript
 
 The backend repo contains a startup script that reads a configuration file from the filesystem,
@@ -51,9 +51,13 @@ All subsequent endpoint calls receive the Session ID in an http-only cookie.  Th
 
 Endpoint: /v1/auth/login (POST)
   - Input:
-    - authorization header containing the Cognito access token
+    - authorization header containing the Cognito ID token (not the access token)
   - Processing:
-    - Use Cognito's  client.send function to get the user's email address
+    - Verify the ID token using Cognito's JWKS endpoint via the jose library.
+      The JWKS URL is: https://cognito-idp.{COGNITO_REGION}.amazonaws.com/{COGNITO_USER_POOL_ID}/.well-known/jwks.json
+    - Extract the user's email from the verified token's claims (the 'email' claim).
+    - Do not use the AWS SDK GetUserCommand — it requires the aws.cognito.signin.user.admin
+      scope which is not present on the access token when using 'openid email' scope.
     - Compute a random session id
     - Store the session in an HTTP-only cookie
     - Create a User object with the session id and email.

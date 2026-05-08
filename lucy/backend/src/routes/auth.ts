@@ -1,32 +1,46 @@
-import { Router, Request, Response } from 'express'
-import { CognitoIdentityProviderClient, GetUserCommand } from '@aws-sdk/client-cognito-identity-provider'
-import { createSession } from '../session'
+import { Router } from 'express'
+import { createRemoteJWKSet, jwtVerify } from 'jose'
+import { generateSessionId, setSession } from '../session'
 import { findOrCreateUser } from '../user'
 
 const router = Router()
-const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.COGNITO_REGION! })
 
-router.post('/login', async (req: Request, res: Response): Promise<void> => {
+// Lazily initialized so env vars are read after startup
+let jwks: ReturnType<typeof createRemoteJWKSet> | null = null
+function getJwks() {
+    if (!jwks) {
+        const url = `https://cognito-idp.${process.env.COGNITO_REGION}.amazonaws.com/${process.env.COGNITO_USER_POOL_ID}/.well-known/jwks.json`
+        jwks = createRemoteJWKSet(new URL(url))
+    }
+    return jwks
+}
+
+router.post('/login', async (req, res) => {
     try {
         const authHeader = req.headers.authorization
         if (!authHeader) {
             res.status(401).json({ error: 'Missing authorization header' })
             return
         }
-        const token = authHeader.replace(/^Bearer\s+/i, '')
-        const command = new GetUserCommand({ AccessToken: token })
-        const cognitoResponse = await cognitoClient.send(command)
-        const email = cognitoResponse.UserAttributes?.find(a => a.Name === 'email')?.Value
+        const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader
+
+        const { payload } = await jwtVerify(idToken, getJwks())
+        const email = payload.email as string | undefined
         if (!email) {
-            res.status(401).json({ error: 'Could not retrieve email from token' })
+            res.status(401).json({ error: 'No email claim in token' })
             return
         }
+
         findOrCreateUser(email)
-        const sessionId = await createSession(email)
-        res.cookie('sessionId', sessionId, { httpOnly: true, sameSite: 'lax' })
-        res.status(200).end()
-    } catch {
-        res.status(401).json({ error: 'Invalid token' })
+        const sessionId = generateSessionId()
+        await setSession(sessionId, email)
+
+        res.cookie('sessionId', sessionId, { httpOnly: true, maxAge: 3600000 })
+        res.json({})
+    } catch (err) {
+        console.error('Login error:', err)
+        const message = err instanceof Error ? err.message : String(err)
+        res.status(401).json({ error: 'Authentication failed', detail: message })
     }
 })
 

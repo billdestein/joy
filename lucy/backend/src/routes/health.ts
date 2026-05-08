@@ -1,9 +1,9 @@
-import { Router, Request, Response } from 'express'
+import { Router } from 'express'
 
 const router = Router()
 
-router.get('/check', (_req: Request, res: Response): void => {
-    res.status(200).end()
+router.get('/check', (_req, res) => {
+    res.json({})
 })
 
 export default router
