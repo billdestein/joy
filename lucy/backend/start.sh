@@ -1,19 +1,21 @@
 #!/bin/bash
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_FILE="$HOME/lucy-config/BackendLocalConfig.json"
+MODE=${1:-local}
 
-if [ ! -f "$CONFIG_FILE" ]; then
-    echo "Config file not found: $CONFIG_FILE"
-    exit 1
+if [ "$MODE" = "prod" ]; then
+    CONFIG_FILE="$HOME/lucy-config/BackendProdConfig.json"
+else
+    CONFIG_FILE="$HOME/lucy-config/BackendLocalConfig.json"
 fi
 
-export $(node -e "
-const fs = require('fs');
-const config = JSON.parse(fs.readFileSync('$CONFIG_FILE', 'utf8'));
-console.log(Object.entries(config).map(([k, v]) => k + '=' + v).join(' '));
-")
+export COGNITO_REGION=$(jq -r '.COGNITO_REGION' "$CONFIG_FILE")
+export COGNITO_USER_POOL_ID=$(jq -r '.COGNITO_USER_POOL_ID' "$CONFIG_FILE")
+export GOOGLE_API_KEY=$(jq -r '.GOOGLE_API_KEY' "$CONFIG_FILE")
+export MOUNT_DIR=$(jq -r '.MOUNT_DIR' "$CONFIG_FILE")
+export ORIGIN=$(jq -r '.ORIGIN' "$CONFIG_FILE")
+export REDIS_HOST=$(jq -r '.REDIS_HOST' "$CONFIG_FILE")
+export REDIS_PORT=$(jq -r '.REDIS_PORT' "$CONFIG_FILE")
 
-cd "$SCRIPT_DIR"
-npx ts-node src/index.ts
+cd "$(dirname "$0")"
+npx ts-node -r tsconfig-paths/register src/index.ts

@@ -1,17 +1,17 @@
-export type User = {
+type BackendUser = {
     email: string
     slug: string
 }
 
-const users = new Map<string, User>()
+const userMap = new Map<string, BackendUser>()
 
-export function computeSlug(email: string): string {
-    return email.toLowerCase().replace(/[@.]/g, '_')
+export function findOrCreateUser(email: string): BackendUser {
+    if (!userMap.has(email)) {
+        userMap.set(email, { email, slug: emailToSlug(email) })
+    }
+    return userMap.get(email)!
 }
 
-export function findOrCreateUser(email: string): User {
-    if (!users.has(email)) {
-        users.set(email, { email, slug: computeSlug(email) })
-    }
-    return users.get(email)!
+function emailToSlug(email: string): string {
+    return email.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }

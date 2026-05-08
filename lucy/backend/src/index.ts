@@ -7,11 +7,9 @@ import healthRouter from './routes/health'
 import workbooksRouter from './routes/workbooks'
 
 const app = express()
+const PORT = 8080
 
-app.use(cors({
-    origin: process.env.ORIGIN,
-    credentials: true
-}))
+app.use(cors({ origin: process.env.ORIGIN!, credentials: true }))
 app.use(express.json())
 app.use(cookieParser())
 
@@ -19,14 +17,11 @@ app.use('/v1/auth', authRouter)
 app.use('/v1/health', healthRouter)
 app.use('/v1/workbooks', workbooksRouter)
 
-async function start() {
+async function main(): Promise<void> {
     await initRedis()
-    app.listen(8080, () => {
-        console.log('Backend listening on port 8080')
+    app.listen(PORT, () => {
+        console.log(`Lucy backend listening on port ${PORT}`)
     })
 }
 
-start().catch(err => {
-    console.error('Failed to start:', err)
-    process.exit(1)
-})
+main().catch(console.error)

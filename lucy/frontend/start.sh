@@ -1,19 +1,10 @@
 #!/bin/bash
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_FILE="$HOME/lucy-config/FrontendLocalConfig.json"
 
-if [ ! -f "$CONFIG_FILE" ]; then
-    echo "Config file not found: $CONFIG_FILE"
-    exit 1
-fi
+export VITE_COGNITO_AUTHORITY=$(jq -r '.COGNITO_AUTHORITY' "$CONFIG_FILE")
+export VITE_COGNITO_CLIENT_ID=$(jq -r '.COGNITO_CLIENT_ID' "$CONFIG_FILE")
 
-export $(node -e "
-const fs = require('fs');
-const config = JSON.parse(fs.readFileSync('$CONFIG_FILE', 'utf8'));
-console.log(Object.entries(config).map(([k, v]) => 'VITE_' + k + '=' + v).join(' '));
-")
-
-cd "$SCRIPT_DIR"
-npm run dev
+cd "$(dirname "$0")"
+npx vite

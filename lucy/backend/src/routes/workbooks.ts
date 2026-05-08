@@ -1,139 +1,110 @@
-import { Router } from 'express'
+import { Router, Request, Response } from 'express'
+import * as fs from 'fs'
+import * as path from 'path'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { PicType, WorkbookType } from '@billdestein/joy-common'
-import { requireAuth } from '../middleware'
-import {
-    createWorkbookDir,
-    readWorkbook,
-    writeWorkbook,
-    listWorkbooks,
-    deleteWorkbookDir,
-    deletePicFile,
-    renamePicFile,
-    writePicFile
-} from '../fileSystem'
+import { WorkbookType, PicType } from '@billdestein/joy-common'
+import { sessionMiddleware } from '../middleware'
+import { readWorkbook, writeWorkbook, workbookDir, listWorkbooks } from '../fileSystem'
 
 const router = Router()
-router.use(requireAuth)
 
-router.post('/create-workbook', async (req, res) => {
-    try {
-        const { workbookName } = req.body
-        const { slug } = req.user!
-        createWorkbookDir(slug, workbookName)
-        const workbook: WorkbookType = { workbookName, pics: [], prompts: [] }
-        writeWorkbook(slug, workbook)
-        res.status(200).send()
-    } catch {
-        res.status(500).json({ error: 'Failed to create workbook' })
-    }
+router.use(sessionMiddleware)
+
+router.post('/create-workbook', async (req: Request, res: Response): Promise<void> => {
+    const { workbookName } = req.body
+    const workbook: WorkbookType = { workbookName, pics: [], prompts: [] }
+    writeWorkbook(req.user!.slug, workbook)
+    res.status(200).end()
 })
 
-router.get('/list-workbooks', async (req, res) => {
-    try {
-        const { slug } = req.user!
-        const workbooks = listWorkbooks(slug)
-        res.json({ workbooks })
-    } catch {
-        res.status(500).json({ error: 'Failed to list workbooks' })
-    }
+router.post('/delete-pic', async (req: Request, res: Response): Promise<void> => {
+    const { workbook, picName } = req.body
+    const slug = req.user!.slug
+    const wb = readWorkbook(slug, workbook.workbookName)
+    wb.pics = wb.pics.filter(p => p.filename !== picName)
+    const picPath = path.join(workbookDir(slug, workbook.workbookName), picName)
+    if (fs.existsSync(picPath)) fs.unlinkSync(picPath)
+    writeWorkbook(slug, wb)
+    res.status(200).end()
 })
 
-router.get('/get-workbook', async (req, res) => {
-    try {
-        const workbookName = req.query.workbookName as string
-        const { slug } = req.user!
-        const workbook = readWorkbook(slug, workbookName)
-        res.json(workbook)
-    } catch {
-        res.status(500).json({ error: 'Failed to get workbook' })
-    }
+router.post('/delete-workbook', async (req: Request, res: Response): Promise<void> => {
+    const { workbookName } = req.body
+    const dir = workbookDir(req.user!.slug, workbookName)
+    if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true })
+    res.status(200).end()
 })
 
-router.post('/delete-workbook', async (req, res) => {
+router.post('/generate-pic', async (req: Request, res: Response): Promise<void> => {
     try {
-        const { workbookName } = req.body
-        const { slug } = req.user!
-        deleteWorkbookDir(slug, workbookName)
-        res.status(200).send()
-    } catch {
-        res.status(500).json({ error: 'Failed to delete workbook' })
-    }
-})
+        const { workbook } = req.body
+        const slug = req.user!.slug
 
-router.post('/generate-pic', async (req, res) => {
-    try {
-        const workbook: WorkbookType = req.body.workbook
-        const { slug } = req.user!
-
-        const focusedPrompt = workbook.prompts.find(p => p.focused)
+        const focusedPrompt = (workbook.prompts as Array<{ focused: boolean; text: string }>)
+            .find(p => p.focused)?.text
         if (!focusedPrompt) {
             res.status(400).json({ error: 'No focused prompt' })
             return
         }
 
         const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!)
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-preview-image-generation' })
-
-        const result = await model.generateContent({
-            contents: [{ role: 'user', parts: [{ text: focusedPrompt.text }] }],
-            generationConfig: { responseModalities: ['IMAGE', 'TEXT'] } as any
-        })
-
+        const model = genAI.getGenerativeModel({ model: 'imagen-3.0-generate-002' })
+        const result = await model.generateContent(focusedPrompt)
         const imagePart = result.response.candidates?.[0]?.content?.parts?.find(p => p.inlineData)
         if (!imagePart?.inlineData) {
-            res.status(500).json({ error: 'No image in response' })
+            res.status(500).json({ error: 'No image returned from Gemini' })
             return
         }
 
-        const { data: imageData, mimeType } = imagePart.inlineData
-        writePicFile(slug, workbook.workbookName, 'unnamed', Buffer.from(imageData, 'base64'))
+        const { mimeType, data } = imagePart.inlineData
+        const ext = mimeType === 'image/png' ? 'png' : 'jpg'
+        const filename = `unnamed.${ext}`
 
-        const pic: PicType = {
-            createdAt: Date.now(),
-            filename: 'unnamed',
-            mimeType
-        }
-        workbook.pics.push(pic)
-        writeWorkbook(slug, workbook)
+        const dir = workbookDir(slug, workbook.workbookName)
+        fs.mkdirSync(dir, { recursive: true })
+        fs.writeFileSync(path.join(dir, filename), Buffer.from(data, 'base64'))
 
-        res.json({ workbook, image: imageData })
-    } catch {
-        res.status(500).json({ error: 'Failed to generate pic' })
+        const wb = readWorkbook(slug, workbook.workbookName)
+        const pic: PicType = { createdAt: Date.now(), filename, mimeType }
+        wb.pics.push(pic)
+        writeWorkbook(slug, wb)
+
+        res.json({ workbook: wb, encodedImage: data })
+    } catch (err) {
+        res.status(500).json({ error: 'Image generation failed' })
     }
 })
 
-router.post('/rename-pic', async (req, res) => {
-    try {
-        const { workbook, newPicName }: { workbook: WorkbookType; newPicName: string } = req.body
-        const { slug } = req.user!
-
-        renamePicFile(slug, workbook.workbookName, 'unnamed', newPicName)
-
-        const pic = workbook.pics.find(p => p.filename === 'unnamed')
-        if (pic) pic.filename = newPicName
-        writeWorkbook(slug, workbook)
-
-        res.status(200).send()
-    } catch {
-        res.status(500).json({ error: 'Failed to rename pic' })
-    }
+router.get('/get-workbook', async (req: Request, res: Response): Promise<void> => {
+    const { workbookName } = req.query as { workbookName: string }
+    const workbook = readWorkbook(req.user!.slug, workbookName)
+    res.json(workbook)
 })
 
-router.post('/delete-pic', async (req, res) => {
-    try {
-        const { workbook, picName }: { workbook: WorkbookType; picName: string } = req.body
-        const { slug } = req.user!
+router.get('/list-workbooks', async (req: Request, res: Response): Promise<void> => {
+    const workbooks = listWorkbooks(req.user!.slug)
+    res.json({ workbooks })
+})
 
-        deletePicFile(slug, workbook.workbookName, picName)
+router.post('/rename-pic', async (req: Request, res: Response): Promise<void> => {
+    const { workbook, newPicName } = req.body
+    const slug = req.user!.slug
+    const wb = readWorkbook(slug, workbook.workbookName)
 
-        workbook.pics = workbook.pics.filter(p => p.filename !== picName)
-        writeWorkbook(slug, workbook)
-
-        res.status(200).send()
-    } catch {
-        res.status(500).json({ error: 'Failed to delete pic' })
+    const unnamedPic = wb.pics.find(p => p.filename.startsWith('unnamed'))
+    if (!unnamedPic) {
+        res.status(404).json({ error: 'No unnamed pic found' })
+        return
     }
+
+    const ext = path.extname(unnamedPic.filename)
+    const newFilename = `${newPicName}${ext}`
+    const dir = workbookDir(slug, workbook.workbookName)
+    fs.renameSync(path.join(dir, unnamedPic.filename), path.join(dir, newFilename))
+    unnamedPic.filename = newFilename
+
+    writeWorkbook(slug, wb)
+    res.status(200).end()
 })
 
 export default router
