@@ -16,8 +16,8 @@ The backend uses:
 The backend repo contains a startup script that reads a configuration file from the filesystem,
 assigns environment variables, and then starts the express server.
 
-When running in local mode, the startup script reads the file ~/.lucy-config/BackendLocalConfig.json.
-When running in prod mode, the startup script reads the file ~/.lucy-config/BackendProdConfig.json.
+When running in local mode, the startup script reads the file ~/lucy-config/BackendLocalConfig.json.
+When running in prod mode, the startup script reads the file ~/lucy-config/BackendProdConfig.json.
 
 Both files contains a single json object with thse properties:
 
