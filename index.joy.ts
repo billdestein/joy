@@ -3,22 +3,19 @@ import { joyLearn as learn } from './learn/language.joy.ts'
 import { architecture } from './learn/architecture.joy.ts'
 import { backend } from './learn/backend.joy.ts'
 import { common } from './learn/common.joy.ts'
-import { backendTest } from './learn/backend-test.joy.ts'
-
+// import { backendTest } from './learn/backend-test.joy.ts'
 // import { frames } from './learn/frames.joy.ts'
 // import { framesTest } from './learn/frames-test.joy.ts'
-// import { frontend } from './learn/frontend.joy.ts'
+import { frontend } from './learn/frontend.joy.ts'
+
 
 execute(`
+    We're just going to generate code.
+    Do not start the backend server.
+    Do not start the Vite dev server.
     Don't read any files from the learn directory speculatively.
+    If you see a typescript comment, starting with //, ignore any mention of execute or learn within the comment.
 `)
-
-// execute(`
-//     We're just going to generate code.
-//     Do not start the backend server.
-//     Do not start the Vite dev server.
-//     Don't read any files from the learn directory speculatively.
-// `)
 
 learn(architecture)
 
@@ -32,12 +29,12 @@ learn(common)
 
 // learn(framesTest)
 
-// learn(frontend)
+learn(frontend)
 
-// execute(`
-//     before proceeding, let me know if you have enough details to build the 
-//     backend repo, the common repo, and frontend repo')
-// `)
+execute(`
+    before proceeding, let me know if everything makes sense and if you have enough 
+    details to build the backend repo, the common repo, and frontend repo')
+`)
 
 // common
 execute(`
@@ -47,16 +44,16 @@ execute(`
 
 // backend
 execute(`
-    create the 'lucy/backend' subdirectory, 
-    and build the backend repo in it.
+    create the 'lucy/backend' subdirectory, and build the backend repo in it.
+    create a script, lucy/backend/start.sh, that I can use to start the backend server in dev mode.
 `)
 
-// backend-test
-execute(`
-    create the 'lucy/backend-test' subdirectory, 
-    and build the backend-test repo in it.
-    Run the backend tests.
-`)
+// // backend-test
+// execute(`
+//     create the 'lucy/backend-test' subdirectory, 
+//     and build the backend-test repo in it.
+//     Run the backend tests.
+// `)
 
 // // frames
 // execute(`
@@ -70,11 +67,11 @@ execute(`
 //     and build the frames-test repo in it.
 // `)
 
-// // frontend
-// execute(`
-//     create the 'lucy/frontend' subdirectory, 
-//     and build the frontend repo in it.
-// `)
+// frontend
+execute(`
+    create the 'lucy/frontend' subdirectory, and build the frontend repo in it.
+    create a script, lucy/frontend/start.sh, that I can use to start the frontend server in dev mode.
+ `)
 
 // execute(`start the backend`)
 // execute(`start the frontend`)
