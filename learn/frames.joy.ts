@@ -35,7 +35,11 @@ resize (near an edge) or a drag (in the header area but not near an edge).  The 
 area is defined as the top (border + header height) pixels of the frame.
 
 The frame header contains zero or more right-aligned buttons.  Each button has a configurable 
-svg icon, handler function, and tool tip label.
+svg icon, handler function, and tool tip label.  When the cursor hovers over a button,
+the background color of the button changes to something different but complementary.
+The tool tip is immediately visible on mouse over.  The tool tips are absolutely
+positioned, appear above their corresponding button, and can extend beyond the frame
+boundary.
 
 The Frame has these props:
 

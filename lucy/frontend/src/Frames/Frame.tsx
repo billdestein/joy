@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import { ButtonConfig } from './types'
 
 export interface FrameProps {
@@ -18,8 +18,8 @@ export interface FrameProps {
 
 type ResizeDir = 'nw' | 'n' | 'ne' | 'w' | 'e' | 'sw' | 's' | 'se'
 
-const EDGE = 10        // px from outer frame edge that triggers resize
-const HEADER = 35      // 5px border + 30px header bar
+const EDGE   = 10   // px from outer frame edge that triggers resize
+const HEADER = 35   // 5px border + 30px header bar
 
 const resizeCursors: Record<ResizeDir, string> = {
     nw: 'nw-resize', n: 'n-resize', ne: 'ne-resize',
@@ -48,6 +48,7 @@ function getDir(clientX: number, clientY: number, rect: DOMRect): ResizeDir | nu
 export function Frame({ id, height, width, x, y, zIndex, isModal, buttons, children, canvasRef, onBringToFront }: FrameProps) {
     const frameRef = useRef<HTMLDivElement>(null)
     const pos = useRef({ x, y, width, height, zIndex })
+    const [tooltip, setTooltip] = useState<{ index: number; rect: DOMRect } | null>(null)
 
     useEffect(() => {
         const frame = frameRef.current
@@ -76,11 +77,9 @@ export function Frame({ id, height, width, x, y, zIndex, isModal, buttons, child
         const onMove = (ev: MouseEvent) => {
             const canvas = canvasRef.current
             if (!canvas || !frameRef.current) return
-            const cr  = canvas.getBoundingClientRect()
-            const dx  = ev.clientX - startX
-            const dy  = ev.clientY - startY
-            const newX = Math.max(40 - pos.current.width, Math.min(cr.width  - 40, startLeft + dx))
-            const newY = Math.max(0,                      Math.min(cr.height - 30, startTop  + dy))
+            const cr   = canvas.getBoundingClientRect()
+            const newX = Math.max(40 - pos.current.width, Math.min(cr.width  - 40, startLeft + ev.clientX - startX))
+            const newY = Math.max(0,                      Math.min(cr.height - 30, startTop  + ev.clientY - startY))
             pos.current.x = newX
             pos.current.y = newY
             frameRef.current.style.left = `${newX}px`
@@ -190,15 +189,17 @@ export function Frame({ id, height, width, x, y, zIndex, isModal, buttons, child
                 {buttons?.map((btn, i) => (
                     <button
                         key={i}
-                        title={btn.tooltip}
                         onClick={e => { e.stopPropagation(); btn.onClick() }}
+                        onMouseEnter={e => setTooltip({ index: i, rect: e.currentTarget.getBoundingClientRect() })}
+                        onMouseLeave={() => setTooltip(null)}
                         style={{
-                            background: 'none',
+                            background: tooltip?.index === i ? '#5a3f3f' : 'none',
                             border: 'none',
                             cursor: 'pointer',
                             color: 'white',
                             fontSize: 14,
-                            padding: '0 4px',
+                            padding: '2px 6px',
+                            borderRadius: 3,
                         }}
                     >
                         {btn.icon}
@@ -209,6 +210,28 @@ export function Frame({ id, height, width, x, y, zIndex, isModal, buttons, child
             <div style={{ flex: 1, overflow: 'auto', position: 'relative' }}>
                 {children}
             </div>
+
+            {tooltip && buttons?.[tooltip.index] && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: tooltip.rect.top - 6,
+                        left: tooltip.rect.left + tooltip.rect.width / 2,
+                        transform: 'translate(-50%, -100%)',
+                        background: '#222',
+                        color: '#ccc',
+                        fontSize: 11,
+                        padding: '3px 7px',
+                        borderRadius: 3,
+                        whiteSpace: 'nowrap',
+                        pointerEvents: 'none',
+                        zIndex: 99999,
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.5)',
+                    }}
+                >
+                    {buttons[tooltip.index].tooltip}
+                </div>
+            )}
         </div>
     )
 }
