@@ -22,7 +22,17 @@ The Frame has this layout:
 - Above the applet div is a header div that is 30 pixels high
 - The header div is used as a grab bar for moving the frame.
 - Around the applet and the header is a five-pixel border
-- Hidden within  the border are eight hidden grab bars used for sizing: NW, N, NE, W, E, SW, S and SE.
+
+Resizing and dragging are implemented by attaching onMouseMove and onMouseDown directly
+to the outer frame div, not via separate handle divs.  Do not use hidden grab bar divs
+inside the border — they are unreliable because z-index and pointer-event behavior inside
+a flex container is unpredictable when the applet contains complex components like AG Grid.
+
+Instead, onMouseMove computes the cursor dynamically based on how close the mouse is to
+each edge of the frame (using getBoundingClientRect).  Use a detection zone of ~10px from
+the outer frame edge.  onMouseDown uses the same geometry to decide whether to start a
+resize (near an edge) or a drag (in the header area but not near an edge).  The header
+area is defined as the top (border + header height) pixels of the frame.
 
 The frame header contains zero or more right-aligned buttons.  Each button has a configurable 
 svg icon, handler function, and tool tip label.
