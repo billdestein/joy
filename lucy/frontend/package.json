@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@billdestein/joy-common": "file:../common",
+    "@monaco-editor/react": "^4.6.0",
     "ag-grid-community": "^30.0.0",
     "ag-grid-react": "^30.0.0",
     "react": "^18.2.0",

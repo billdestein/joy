@@ -1,7 +1,19 @@
+import Editor from '@monaco-editor/react'
+
 export function ComposerEditorComponent() {
     return (
-        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7a9ab0', fontSize: 14 }}>
-            ComposerEditorComponent
-        </div>
+        <Editor
+            height="100%"
+            width="100%"
+            defaultLanguage="plaintext"
+            theme="vs-dark"
+            options={{
+                minimap: { enabled: false },
+                fontSize: 13,
+                lineNumbers: 'off',
+                wordWrap: 'on',
+                scrollBeyondLastLine: false,
+            }}
+        />
     )
 }

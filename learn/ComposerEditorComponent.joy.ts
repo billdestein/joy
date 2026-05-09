@@ -3,6 +3,6 @@
 //----------------------------------------------------------------------------------------------------
 export const ComposerEditorComponent = `
 
-The ComposerEditorComponent simply shows the text "ComposerEditorComponent"
+The entire viewport of the ComposerEditorComponent is filled with a React Monaco editor.
 
 `
