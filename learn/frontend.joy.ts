@@ -36,8 +36,24 @@ WorkbookListApplet to the canvas.
 The OIDC scope must be 'openid email' — do not include 'profile', as Cognito does not enable
 it by default and it will cause an invalid_scope error.
 
-After a successful OIDC login, the frontend calls /v1/auth/login with the ID token
-(auth.user.id_token), not the access token (auth.user.access_token).
+Do NOT use react-oidc-context or oidc-client-ts.  These libraries store PKCE state in
+sessionStorage before the Cognito redirect.  Cognito's hosted UI sometimes performs an
+intermediate redirect that clears sessionStorage, causing an unrecoverable 'No matching state
+found in storage' error on the callback.
+
+Instead, implement the Authorization Code + PKCE flow manually:
+- On sign-in: generate a random state and code_verifier, store both in localStorage, compute
+  the code_challenge (SHA-256 base64url of the verifier), fetch the authorization_endpoint
+  from {COGNITO_AUTHORITY}/.well-known/openid-configuration, and redirect there.
+- On callback (URL contains ?code=...&state=...): verify state matches localStorage, exchange
+  the code for tokens by POSTing to the token_endpoint (from the discovery doc) with
+  grant_type=authorization_code and code_verifier, then store the id_token in localStorage
+  and clean the URL with history.replaceState.
+- On subsequent loads: read the stored id_token, decode the JWT payload to check the exp
+  claim, and treat it as valid if not expired.
+
+After obtaining the id_token, the frontend calls /v1/auth/login with the ID token
+in the Authorization header, not the access token.
 Using the access token would fail because the Cognito GetUser API requires the
 aws.cognito.signin.user.admin scope, which is not granted under 'openid email'.
 

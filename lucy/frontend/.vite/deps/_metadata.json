@@ -1,0 +1,52 @@
+{
+  "hash": "47bc276f",
+  "configHash": "a186df24",
+  "lockfileHash": "485cf281",
+  "browserHash": "e2b1fe1a",
+  "optimized": {
+    "react/jsx-dev-runtime": {
+      "src": "../../node_modules/react/jsx-dev-runtime.js",
+      "file": "react_jsx-dev-runtime.js",
+      "fileHash": "abff9f89",
+      "needsInterop": true
+    },
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "25d33d4a",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "138937ba",
+      "needsInterop": true
+    },
+    "react-oidc-context": {
+      "src": "../../node_modules/react-oidc-context/dist/esm/react-oidc-context.js",
+      "file": "react-oidc-context.js",
+      "fileHash": "f7cda13d",
+      "needsInterop": false
+    },
+    "react-icons/io5": {
+      "src": "../../node_modules/react-icons/io5/index.mjs",
+      "file": "react-icons_io5.js",
+      "fileHash": "d1ebfc7f",
+      "needsInterop": false
+    },
+    "ag-grid-react": {
+      "src": "../../node_modules/ag-grid-react/lib/main.js",
+      "file": "ag-grid-react.js",
+      "fileHash": "00befccd",
+      "needsInterop": true
+    }
+  },
+  "chunks": {
+    "chunk-YUNTBJI6": {
+      "file": "chunk-YUNTBJI6.js"
+    },
+    "chunk-45FXRYJS": {
+      "file": "chunk-45FXRYJS.js"
+    }
+  }
+}

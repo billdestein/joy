@@ -8,7 +8,9 @@ import { frames } from './learn/frames.joy.ts'
 import { FrameHeaderButtonComponent } from './learn/FrameHeaderButtonComponent.joy.ts'
 import { GetWorkbookNameApplet } from './learn/GetWorkbookNameApplet.joy.ts'
 import { MainMenuComponent } from './learn/MainMenu.joy.ts'
+import { PicListComponent } from './learn/PicListComponennt.joy.ts'
 import { UploadWorkbookApplet } from './learn/UploadWorkbookApplet.joy.ts'
+import { ViewerComponent } from './learn/ViewerComponent.joy.ts'
 import { WorkbookListApplet } from './learn/WorkbookListApplet.joy.ts'
 import { WorkbookApplet } from './learn/WorkbookApplet.joy.ts'
 // import { framesTest } from './learn/frames-test.joy.ts'
@@ -39,7 +41,11 @@ learn(FrameHeaderButtonComponent)
 
 learn(GetWorkbookNameApplet)
 
+learn(PicListComponent)
+
 learn(UploadWorkbookApplet)
+
+learn(ViewerComponent)
 
 learn(WorkbookListApplet)
 

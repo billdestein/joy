@@ -1,27 +1,22 @@
 import { Request, Response, NextFunction } from 'express'
-import { UserType } from '@billdestein/joy-common'
-import { getEmailFromSession } from './session'
-import { findOrCreateUser } from './user'
+import { getSession } from './session'
+import { findOrCreateUser, User } from './user'
 
-declare global {
-    namespace Express {
-        interface Request {
-            user?: UserType
-        }
-    }
+export interface AuthenticatedRequest extends Request {
+    user: User
 }
 
-export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const sessionId = req.cookies?.sessionId
+export async function sessionMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const sessionId = req.cookies?.['session_id']
     if (!sessionId) {
-        res.status(401).json({ error: 'Unauthorized' })
+        res.status(401).json({ error: 'Not authenticated' })
         return
     }
-    const email = await getEmailFromSession(sessionId)
+    const email = await getSession(sessionId)
     if (!email) {
-        res.status(401).json({ error: 'Unauthorized' })
+        res.status(401).json({ error: 'Session expired' })
         return
     }
-    req.user = findOrCreateUser(email)
+    ;(req as AuthenticatedRequest).user = findOrCreateUser(email)
     next()
 }

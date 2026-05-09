@@ -1,23 +1,19 @@
 import { createClient } from 'redis'
 
-const SESSION_TTL = 3600
+const client = createClient({
+    url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+})
 
-type RedisClient = ReturnType<typeof createClient>
-let redisClient: RedisClient
+client.on('error', (err) => console.error('Redis error:', err))
 
-export async function initRedis(): Promise<void> {
-    const host = process.env.REDIS_HOST || 'localhost'
-    const port = parseInt(process.env.REDIS_PORT || '6379', 10)
-
-    redisClient = createClient({ socket: { host, port } })
-    redisClient.on('error', (err) => console.error('Redis error:', err))
-    await redisClient.connect()
+export async function connectRedis(): Promise<void> {
+    await client.connect()
 }
 
 export async function setSession(sessionId: string, email: string): Promise<void> {
-    await redisClient.setEx(sessionId, SESSION_TTL, email)
+    await client.set(`session:${sessionId}`, email, { EX: 3600 })
 }
 
-export async function getEmailFromSession(sessionId: string): Promise<string | null> {
-    return redisClient.get(sessionId)
+export async function getSession(sessionId: string): Promise<string | null> {
+    return client.get(`session:${sessionId}`)
 }

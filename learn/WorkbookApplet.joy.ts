@@ -22,6 +22,8 @@ Initially, the left pane is 30% wide.
 The right pane is split into two panes, top and bottom, by a five-pixel slider.
 Initially, the top pane is 60% heigh.
 
+The left pane contains an instance of the PicListComponent.
 
+The upper right pane contains an instance of the ViewerComponent.
 
 `

@@ -1,66 +1,72 @@
 import React, { useState } from 'react'
 
 interface Props {
-  onClose: () => void
-  onOk: (name: string) => void
+    onClose: () => void
+    onOk: (name: string) => void
 }
 
 export function GetWorkbookNameApplet({ onClose, onOk }: Props) {
-  const [name, setName] = useState('')
+    const [name, setName] = useState('')
 
-  function handleOk() {
-    if (!name.trim()) return
-    onOk(name.trim())
-    onClose()
-  }
+    function handleOk() {
+        if (!name.trim()) return
+        onOk(name.trim())
+        onClose()
+    }
 
-  return (
-    <div style={styles.container}>
-      <div style={styles.label}>Enter a name for the new workbook</div>
-      <input
-        style={styles.input}
-        type="text"
-        value={name}
-        onChange={e => setName(e.target.value)}
-        onKeyDown={e => { if (e.key === 'Enter') handleOk() }}
-        autoFocus
-      />
-      <div style={styles.buttons}>
-        <button style={styles.btn} onClick={handleOk}>OK</button>
-        <button style={styles.btn} onClick={onClose}>Cancel</button>
-      </div>
-    </div>
-  )
+    return (
+        <div
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 12,
+                padding: 20,
+                color: '#cce0ff',
+                width: '100%',
+                height: '100%',
+                justifyContent: 'center',
+            }}
+        >
+            <div style={{ fontSize: 13 }}>Enter a name for the new workbook</div>
+            <input
+                autoFocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleOk() }}
+                style={{
+                    background: '#0e1820',
+                    color: '#cce0ff',
+                    border: '1px solid #3a5070',
+                    borderRadius: 4,
+                    padding: '6px 10px',
+                    fontSize: 13,
+                    outline: 'none',
+                }}
+            />
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <button onClick={onClose} style={secondaryBtnStyle}>Cancel</button>
+                <button onClick={handleOk} style={primaryBtnStyle}>OK</button>
+            </div>
+        </div>
+    )
 }
 
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    padding: 16,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
-    color: '#ddd',
-    height: '100%',
-    background: '#2a2a2a',
-  },
-  label: { fontSize: 13 },
-  input: {
-    padding: '6px 8px',
-    background: '#1a1a1a',
-    border: '1px solid #555',
+const primaryBtnStyle: React.CSSProperties = {
+    background: '#2a6040',
+    color: '#cce0ff',
+    border: '1px solid #3a7050',
     borderRadius: 4,
-    color: '#eee',
-    fontSize: 13,
-    outline: 'none',
-  },
-  buttons: { display: 'flex', gap: 8, justifyContent: 'flex-end' },
-  btn: {
-    padding: '5px 14px',
-    background: '#444',
-    border: '1px solid #666',
-    borderRadius: 4,
-    color: '#eee',
+    padding: '5px 16px',
     cursor: 'pointer',
     fontSize: 13,
-  },
+}
+
+const secondaryBtnStyle: React.CSSProperties = {
+    background: '#2a3040',
+    color: '#aac0d0',
+    border: '1px solid #3a4060',
+    borderRadius: 4,
+    padding: '5px 16px',
+    cursor: 'pointer',
+    fontSize: 13,
 }
