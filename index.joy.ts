@@ -3,6 +3,9 @@ import { joyLearn as learn } from './learn/language.joy.ts'
 import { architecture } from './learn/architecture.joy.ts'
 import { backend } from './learn/backend.joy.ts'
 import { common } from './learn/common.joy.ts'
+import { ComposerButtonComponent } from './learn/ComposerButtonComponent.joy.ts'
+import { ComposerButtonRowComponent } from './learn/ComposerButtonRowComponent.joy.ts'
+import { ComposerEditorComponent } from './learn/ComposerEditorComponent.joy.ts'
 import { ComposerComponent } from './learn/ComposerComponent.joy.ts'
 // import { backendTest } from './learn/backend-test.joy.ts'
 import { frames } from './learn/frames.joy.ts'
@@ -34,6 +37,12 @@ learn(backend)
 
 learn(common)
 
+learn(ComposerEditorComponent)
+
+learn(ComposerButtonComponent)
+
+learn(ComposerButtonRowComponent)
+
 learn(ComposerComponent)
 
 learn(MainMenuComponent)
@@ -64,11 +73,6 @@ execute(`
 
     - the backend repo, 
     - the common repo, 
-    - the MainMenuComponent,
-    - the frames library,
-    - the GetWorkbookNameApplet,
-    - the UploadWorkbookApplet,
-    - the WorkbookListApplet,
     - the frontend repo
 `)
 

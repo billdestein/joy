@@ -142,7 +142,7 @@ export function Frame({ frameId: _frameId, width, height, x, y, zIndex, isModal,
             ref={divRef}
             onMouseMove={handleMouseMove}
             onMouseDown={handleMouseDown}
-            style={{ position: 'absolute', border: `${BORDER}px solid #3a5070`, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', background: '#1e2a38', overflow: 'hidden', userSelect: 'none' }}
+            style={{ position: 'absolute', border: `${BORDER}px solid #3a5070`, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', background: '#1e2a38', userSelect: 'none' }}
         >
             <div style={{ height: HEADER_HEIGHT, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 4px', background: '#253545', gap: 2, cursor: 'inherit' }}>
                 {buttons.map((btn, i) => <FrameHeaderButtonComponent key={i} {...btn} />)}
