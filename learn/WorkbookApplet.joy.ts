@@ -16,8 +16,12 @@ The surrounding frame has these three FrameHeaderButtonComponents:
     Handler: Call Canvas.removeFrame
 }
 
-The applet viewport is split into two panes, left and right, by a five-pixel horizontal slider.
+The applet viewport is split into two panes, left and right, by a five-pixel slider.
 Initially, the left pane is 30% wide.
+
+The right pane is split into two panes, top and bottom, by a five-pixel slider.
+Initially, the top pane is 60% heigh.
+
 
 
 `

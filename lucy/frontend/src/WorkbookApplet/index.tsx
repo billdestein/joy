@@ -9,22 +9,44 @@ interface Props {
 
 export function WorkbookApplet({ workbookName }: Props) {
   const [leftPct, setLeftPct] = useState(30)
+  const [topPct, setTopPct] = useState(60)
   const containerRef = useRef<HTMLDivElement>(null)
-  const dragging = useRef(false)
+  const rightPaneRef = useRef<HTMLDivElement>(null)
 
-  function onDividerMouseDown(e: React.MouseEvent) {
+  function onVerticalDividerMouseDown(e: React.MouseEvent) {
     e.preventDefault()
-    dragging.current = true
+    const dragging = { active: true }
 
     function onMouseMove(ev: MouseEvent) {
-      if (!dragging.current || !containerRef.current) return
+      if (!dragging.active || !containerRef.current) return
       const rect = containerRef.current.getBoundingClientRect()
       const pct = ((ev.clientX - rect.left) / rect.width) * 100
       setLeftPct(Math.min(80, Math.max(10, pct)))
     }
 
     function onMouseUp() {
-      dragging.current = false
+      dragging.active = false
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+    }
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+  }
+
+  function onHorizontalDividerMouseDown(e: React.MouseEvent) {
+    e.preventDefault()
+    const dragging = { active: true }
+
+    function onMouseMove(ev: MouseEvent) {
+      if (!dragging.active || !rightPaneRef.current) return
+      const rect = rightPaneRef.current.getBoundingClientRect()
+      const pct = ((ev.clientY - rect.top) / rect.height) * 100
+      setTopPct(Math.min(80, Math.max(10, pct)))
+    }
+
+    function onMouseUp() {
+      dragging.active = false
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseup', onMouseUp)
     }
@@ -35,14 +57,31 @@ export function WorkbookApplet({ workbookName }: Props) {
 
   return (
     <div ref={containerRef} style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
-      <div style={{ width: `${leftPct}%`, overflow: 'auto', background: '#2a2a2a', color: '#ddd', padding: 8 }}>
+      {/* Left pane */}
+      <div style={{ width: `${leftPct}%`, overflow: 'auto', background: '#2a2a2a', color: '#ddd', padding: 8, flexShrink: 0 }}>
         {workbookName}
       </div>
+
+      {/* Vertical divider */}
       <div
         style={{ width: 5, cursor: 'col-resize', background: '#555', flexShrink: 0 }}
-        onMouseDown={onDividerMouseDown}
+        onMouseDown={onVerticalDividerMouseDown}
       />
-      <div style={{ flex: 1, overflow: 'auto', background: '#252525' }} />
+
+      {/* Right pane — split top/bottom */}
+      <div ref={rightPaneRef} style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Top pane */}
+        <div style={{ height: `${topPct}%`, overflow: 'auto', background: '#252525', flexShrink: 0 }} />
+
+        {/* Horizontal divider */}
+        <div
+          style={{ height: 5, cursor: 'row-resize', background: '#555', flexShrink: 0 }}
+          onMouseDown={onHorizontalDividerMouseDown}
+        />
+
+        {/* Bottom pane */}
+        <div style={{ flex: 1, overflow: 'auto', background: '#202020' }} />
+      </div>
     </div>
   )
 }
