@@ -3,7 +3,7 @@
 //----------------------------------------------------------------------------------------------------
 export const ComposerButtonRowComponent = `
 
-The ComposerButtonRow contains three ComposerButtonComponents.  They are:
+The ComposerButtonRowComponent contains three ComposerButtonComponent.  They are:
 
 {
     icon: ButtonIcons.previous

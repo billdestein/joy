@@ -109,8 +109,11 @@ execute(`
 
 // frontend
 execute(`
-    delete and recreate the 'lucy/frontend' directory, and create the frontend repo in it.
-    create a script, lucy/frontend/start.sh, that I can use to start the frontend server in dev mode.
+    Before writing any code, re-read every learn file imported at the top of this file to ensure
+    you have the latest spec content. Do not rely on versions already in your context window —
+    they may be stale. Then delete and recreate the 'lucy/frontend' directory, and create the
+    frontend repo in it. Create a script, lucy/frontend/start.sh, that I can use to start the
+    frontend server in dev mode.
  `)
 
 // execute(`start the backend`)
