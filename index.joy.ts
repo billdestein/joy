@@ -6,6 +6,7 @@ import { common } from './learn/common.joy.ts'
 // import { backendTest } from './learn/backend-test.joy.ts'
 import { frames } from './learn/frames.joy.ts'
 import { GetWorkbookNameApplet } from './learn/get-workbook-name-applet.joy.ts'
+import { MainMenuComponent } from './learn/main-menu.joy.ts'
 import { UploadWorkbookApplet } from './learn/upload-workbook-applet.joy.ts'
 import { WorkbookListApplet } from './learn/workbook-list-applet.joy.ts'
 // import { framesTest } from './learn/frames-test.joy.ts'
@@ -28,6 +29,8 @@ learn(backend)
 
 learn(common)
 
+learn(MainMenuComponent)
+
 learn(frames)
 
 learn(GetWorkbookNameApplet)
@@ -46,6 +49,7 @@ execute(`
 
     - the backend repo, 
     - the common repo, 
+    - the MainMenuComponent,
     - the frames library,
     - the GetWorkbookNameApplet,
     - the UploadWorkbookApplet,

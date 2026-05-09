@@ -1,10 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useAuth } from 'react-oidc-context'
-import { canvas, CanvasHost } from './Frames'
-import { ButtonIcons } from './ButtonIcons'
-import WorkbookListApplet from './WorkbookListApplet'
-import GetWorkbookNameApplet from './GetWorkbookNameApplet'
-import UploadWorkbookApplet from './UploadWorkbookApplet'
+import { CanvasHost } from './Frames'
+import MainMenuComponent from './MainMenuComponent'
 
 export default function App() {
     const auth = useAuth()
@@ -55,100 +52,11 @@ export default function App() {
 
     return (
         <div style={{ ...fullscreen('#111'), display: 'flex', flexDirection: 'column' }}>
-            <ButtonRow />
+            <MainMenuComponent />
             <div style={{ flex: 1, overflow: 'hidden' }}>
                 <CanvasHost />
             </div>
         </div>
-    )
-}
-
-function ButtonRow() {
-    const handleWorkbooks = () => {
-        let frameId: number
-        frameId = canvas.addFrame({
-            width: 640,
-            height: 420,
-            x: 60,
-            y: 60,
-            buttons: [
-                {
-                    key: 'close',
-                    icon: ButtonIcons.x,
-                    tip: 'Close',
-                    onClick: () => canvas.removeFrame(frameId),
-                },
-            ],
-            children: <WorkbookListApplet />,
-        })
-    }
-
-    const handleNewWorkbook = () => {
-        let frameId: number
-        frameId = canvas.addFrame({
-            width: 340,
-            height: 150,
-            x: 0,
-            y: 0,
-            isModal: true,
-            zIndex: 500,
-            children: (
-                <GetWorkbookNameApplet
-                    frameId={frameId!}
-                    onOk={(name) => console.log('create workbook:', name)}
-                />
-            ),
-        })
-    }
-
-    const handleUpload = () => {
-        let frameId: number
-        frameId = canvas.addFrame({
-            width: 300,
-            height: 140,
-            x: 0,
-            y: 0,
-            isModal: true,
-            zIndex: 500,
-            children: <UploadWorkbookApplet frameId={frameId!} />,
-        })
-    }
-
-    return (
-        <div style={{
-            height: 40,
-            background: '#1a1a1a',
-            borderBottom: '1px solid #333',
-            display: 'flex',
-            alignItems: 'center',
-            padding: '0 8px',
-            gap: 4,
-            flexShrink: 0,
-        }}>
-            <ToolbarButton label="Workbooks" onClick={handleWorkbooks} />
-            <ToolbarButton label="New" onClick={handleNewWorkbook} />
-            <ToolbarButton label="Upload" onClick={handleUpload} />
-        </div>
-    )
-}
-
-function ToolbarButton({ label, onClick }: { label: string; onClick: () => void }) {
-    return (
-        <button
-            onClick={onClick}
-            style={{
-                background: 'transparent',
-                border: '1px solid #444',
-                color: '#ccc',
-                padding: '4px 12px',
-                borderRadius: 4,
-                cursor: 'pointer',
-                fontSize: 13,
-                fontFamily: 'sans-serif',
-            }}
-        >
-            {label}
-        </button>
     )
 }
 

@@ -27,14 +27,11 @@ The frontend repo has file src/WorkbookListApplet that holds the WorkbookListApp
 Initially, frontend shows an all black window with the word "Lucy" centered in the window
 in color gold.  And there's a signin button in the upper right that initiates Cognito login.
 
-Once loggedin, the frontend has a button row across the window.  The remainder of the 
-vertical space is the canvas.
+Once loggedin, the frontend a MainMenuComponent across the top of the browser windoe.  
+The remainder of the vertical space is the canvas.
 
 One button in the button row is has label "Workbooks".  When clicked, it adds a 
 WorkbookListApplet to the canvas.
-
-
-
 
 The OIDC scope must be 'openid email' — do not include 'profile', as Cognito does not enable
 it by default and it will cause an invalid_scope error.
