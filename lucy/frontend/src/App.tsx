@@ -16,9 +16,7 @@ async function sha256Base64Url(str: string): Promise<string> {
     const data = new TextEncoder().encode(str)
     const digest = await crypto.subtle.digest('SHA-256', data)
     return btoa(String.fromCharCode(...new Uint8Array(digest)))
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=/g, '')
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
 }
 
 let _discoveryCache: { authorization_endpoint: string; token_endpoint: string } | null = null
@@ -147,22 +145,13 @@ export function App() {
             })
     }, [idToken, backendReady])
 
-    if (loading) {
-        return <div style={blackScreen}><span style={lucyTitle}>Lucy</span></div>
-    }
+    if (loading) return <div style={blackScreen}><span style={lucyTitle}>Lucy</span></div>
 
     if (authError) {
         return (
             <div style={blackScreen}>
-                <span style={{ color: '#cc4444', fontSize: 13, padding: 20, textAlign: 'center' }}>
-                    {authError}
-                </span>
-                <button
-                    onClick={() => { setAuthError(null); void startSignIn() }}
-                    style={signInBtnStyle}
-                >
-                    Try Again
-                </button>
+                <span style={{ color: '#cc4444', fontSize: 13, padding: 20, textAlign: 'center' }}>{authError}</span>
+                <button onClick={() => { setAuthError(null); void startSignIn() }} style={signInBtnStyle}>Try Again</button>
             </div>
         )
     }
@@ -171,19 +160,12 @@ export function App() {
         return (
             <div style={blackScreen}>
                 <span style={lucyTitle}>Lucy</span>
-                <button
-                    onClick={() => startSignIn().catch((e) => setAuthError(String(e)))}
-                    style={signInBtnStyle}
-                >
-                    Sign In
-                </button>
+                <button onClick={() => startSignIn().catch((e) => setAuthError(String(e)))} style={signInBtnStyle}>Sign In</button>
             </div>
         )
     }
 
-    if (!backendReady) {
-        return <div style={blackScreen}><span style={lucyTitle}>Lucy</span></div>
-    }
+    if (!backendReady) return <div style={blackScreen}><span style={lucyTitle}>Lucy</span></div>
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%' }}>
@@ -194,32 +176,15 @@ export function App() {
 }
 
 const blackScreen: React.CSSProperties = {
-    width: '100%',
-    height: '100%',
-    background: '#000',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    flexDirection: 'column',
+    width: '100%', height: '100%', background: '#000',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    position: 'relative', flexDirection: 'column',
 }
-
 const lucyTitle: React.CSSProperties = {
-    color: 'gold',
-    fontSize: 48,
-    fontFamily: 'Georgia, serif',
-    letterSpacing: 6,
+    color: 'gold', fontSize: 48, fontFamily: 'Georgia, serif', letterSpacing: 6,
 }
-
 const signInBtnStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    background: '#2a4060',
-    color: '#cce0ff',
-    border: '1px solid #3a5070',
-    borderRadius: 4,
-    padding: '6px 16px',
-    cursor: 'pointer',
-    fontSize: 13,
+    position: 'absolute', top: 16, right: 16,
+    background: '#2a4060', color: '#cce0ff', border: '1px solid #3a5070',
+    borderRadius: 4, padding: '6px 16px', cursor: 'pointer', fontSize: 13,
 }

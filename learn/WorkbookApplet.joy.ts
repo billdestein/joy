@@ -26,4 +26,6 @@ The left pane contains an instance of the PicListComponent.
 
 The upper right pane contains an instance of the ViewerComponent.
 
+The lower right pane contains an instance of the ComposerComponent.
+
 `

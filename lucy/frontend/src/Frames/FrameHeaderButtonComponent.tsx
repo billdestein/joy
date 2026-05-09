@@ -10,23 +10,12 @@ export function FrameHeaderButtonComponent({ icon, toolTipLabel, handler }: Prop
     return (
         <div style={{ position: 'relative', display: 'inline-flex' }}>
             {tooltipVisible && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        bottom: '100%',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        background: '#333',
-                        color: '#fff',
-                        padding: '2px 6px',
-                        borderRadius: 3,
-                        fontSize: 11,
-                        whiteSpace: 'nowrap',
-                        pointerEvents: 'none',
-                        zIndex: 99999,
-                        marginBottom: 4,
-                    }}
-                >
+                <div style={{
+                    position: 'absolute', bottom: '100%', left: '50%',
+                    transform: 'translateX(-50%)', background: '#333', color: '#fff',
+                    padding: '2px 6px', borderRadius: 3, fontSize: 11, whiteSpace: 'nowrap',
+                    pointerEvents: 'none', zIndex: 99999, marginBottom: 4,
+                }}>
                     {toolTipLabel}
                 </div>
             )}
@@ -35,17 +24,10 @@ export function FrameHeaderButtonComponent({ icon, toolTipLabel, handler }: Prop
                 onMouseEnter={() => { setHovered(true); setTooltipVisible(true) }}
                 onMouseLeave={() => { setHovered(false); setTooltipVisible(false) }}
                 style={{
-                    width: 22,
-                    height: 22,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: 3,
-                    cursor: 'pointer',
-                    background: hovered ? '#4a6080' : 'transparent',
-                    color: '#ccc',
-                    fontSize: 14,
-                    flexShrink: 0,
+                    width: 22, height: 22, display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', borderRadius: 3, cursor: 'pointer',
+                    background: hovered ? '#4a6080' : 'transparent', color: '#ccc',
+                    fontSize: 14, flexShrink: 0,
                 }}
             >
                 {icon}

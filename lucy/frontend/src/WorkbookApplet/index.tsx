@@ -1,6 +1,7 @@
-import React, { useRef, useState, useCallback } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { PicListComponent } from '../PicListComponent'
 import { ViewerComponent } from '../ViewerComponent'
+import { ComposerComponent } from '../ComposerComponent'
 
 interface Props {
     workbookName: string
@@ -11,95 +12,53 @@ export function WorkbookApplet({ workbookName: _workbookName, onClose: _onClose 
     const [leftPct, setLeftPct] = useState(30)
     const [topPct, setTopPct] = useState(60)
     const containerRef = useRef<HTMLDivElement>(null)
-    const hDragRef = useRef<{ startX: number; startPct: number } | null>(null)
-    const vDragRef = useRef<{ startY: number; startPct: number } | null>(null)
+    const hDrag = useRef<{ startX: number; startPct: number } | null>(null)
+    const vDrag = useRef<{ startY: number; startPct: number } | null>(null)
 
-    const onHSplitterMouseDown = useCallback((e: React.MouseEvent) => {
+    const onHDown = useCallback((e: React.MouseEvent) => {
         e.preventDefault()
-        hDragRef.current = { startX: e.clientX, startPct: leftPct }
+        hDrag.current = { startX: e.clientX, startPct: leftPct }
     }, [leftPct])
 
-    const onVSplitterMouseDown = useCallback((e: React.MouseEvent) => {
+    const onVDown = useCallback((e: React.MouseEvent) => {
         e.preventDefault()
-        vDragRef.current = { startY: e.clientY, startPct: topPct }
+        vDrag.current = { startY: e.clientY, startPct: topPct }
     }, [topPct])
 
-    React.useEffect(() => {
-        function onMouseMove(e: MouseEvent) {
-            if (hDragRef.current && containerRef.current) {
-                const totalW = containerRef.current.clientWidth
-                const dx = e.clientX - hDragRef.current.startX
-                const newPct = Math.max(10, Math.min(90, hDragRef.current.startPct + (dx / totalW) * 100))
-                setLeftPct(newPct)
+    useEffect(() => {
+        function onMove(e: MouseEvent) {
+            if (hDrag.current && containerRef.current) {
+                const dx = e.clientX - hDrag.current.startX
+                const pct = Math.max(10, Math.min(90, hDrag.current.startPct + (dx / containerRef.current.clientWidth) * 100))
+                setLeftPct(pct)
             }
-            if (vDragRef.current && containerRef.current) {
-                const rightPane = containerRef.current.querySelector('.right-pane') as HTMLElement | null
+            if (vDrag.current) {
+                const rightPane = containerRef.current?.querySelector('.right-pane') as HTMLElement | null
                 if (!rightPane) return
-                const totalH = rightPane.clientHeight
-                const dy = e.clientY - vDragRef.current.startY
-                const newPct = Math.max(10, Math.min(90, vDragRef.current.startPct + (dy / totalH) * 100))
-                setTopPct(newPct)
+                const dy = e.clientY - vDrag.current.startY
+                const pct = Math.max(10, Math.min(90, vDrag.current.startPct + (dy / rightPane.clientHeight) * 100))
+                setTopPct(pct)
             }
         }
-        function onMouseUp() {
-            hDragRef.current = null
-            vDragRef.current = null
-        }
-        document.addEventListener('mousemove', onMouseMove)
-        document.addEventListener('mouseup', onMouseUp)
-        return () => {
-            document.removeEventListener('mousemove', onMouseMove)
-            document.removeEventListener('mouseup', onMouseUp)
-        }
+        function onUp() { hDrag.current = null; vDrag.current = null }
+        document.addEventListener('mousemove', onMove)
+        document.addEventListener('mouseup', onUp)
+        return () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp) }
     }, [])
 
     return (
-        <div
-            ref={containerRef}
-            style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden' }}
-        >
-            {/* Left pane */}
+        <div ref={containerRef} style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden' }}>
             <div style={{ width: `${leftPct}%`, height: '100%', overflow: 'hidden', flexShrink: 0 }}>
                 <PicListComponent />
             </div>
-
-            {/* Horizontal splitter */}
-            <div
-                onMouseDown={onHSplitterMouseDown}
-                style={{
-                    width: 5,
-                    flexShrink: 0,
-                    background: '#2a3a50',
-                    cursor: 'col-resize',
-                    height: '100%',
-                }}
-            />
-
-            {/* Right pane */}
-            <div
-                className="right-pane"
-                style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
-            >
-                {/* Upper right */}
+            <div onMouseDown={onHDown} style={{ width: 5, flexShrink: 0, background: '#2a3a50', cursor: 'col-resize' }} />
+            <div className="right-pane" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 <div style={{ height: `${topPct}%`, overflow: 'hidden', flexShrink: 0 }}>
                     <ViewerComponent />
                 </div>
-
-                {/* Vertical splitter */}
-                <div
-                    onMouseDown={onVSplitterMouseDown}
-                    style={{
-                        height: 5,
-                        flexShrink: 0,
-                        background: '#2a3a50',
-                        cursor: 'row-resize',
-                        width: '100%',
-                    }}
-                />
-
-                {/* Lower right */}
-                <div style={{ flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4a6070', fontSize: 13 }}>
-                    {/* placeholder */}
+                <div onMouseDown={onVDown} style={{ height: 5, flexShrink: 0, background: '#2a3a50', cursor: 'row-resize' }} />
+                <div style={{ flex: 1, overflow: 'hidden' }}>
+                    <ComposerComponent />
                 </div>
             </div>
         </div>

@@ -1,5 +1,4 @@
-export { canvas, Canvas } from './Canvas'
+export { canvas, Canvas, getNextZIndex } from './Canvas'
 export { Frame } from './Frame'
 export { FrameHeaderButtonComponent } from './FrameHeaderButtonComponent'
-export { getNextZIndex } from './zindex'
 export type { AddFrameConfig, ButtonConfig, FrameEntry } from './types'

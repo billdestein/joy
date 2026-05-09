@@ -28,20 +28,13 @@ function getResizeDir(x: number, y: number, w: number, h: number): ResizeDir {
     const nearRight = x > w - DETECT
     const nearTop = y < DETECT
     const nearBottom = y > h - DETECT
-
     if (!nearLeft && !nearRight && !nearTop && !nearBottom) return ''
-
     let dir = ''
     if (nearTop) dir += 'n'
     else if (nearBottom) dir += 's'
     if (nearLeft) dir += 'w'
     else if (nearRight) dir += 'e'
     return dir as ResizeDir
-}
-
-function resizeCursor(dir: ResizeDir): string {
-    if (!dir) return 'default'
-    return `${dir}-resize`
 }
 
 export function Frame({ frameId: _frameId, width, height, x, y, zIndex, isModal, buttons, children }: FrameProps) {
@@ -60,15 +53,11 @@ export function Frame({ frameId: _frameId, width, height, x, y, zIndex, isModal,
     useEffect(() => {
         const el = divRef.current
         if (!el) return
-
-        // Set initial position
         if (isModal) {
             const parent = el.offsetParent as HTMLElement | null
             if (parent) {
-                const pw = parent.clientWidth
-                const ph = parent.clientHeight
-                el.style.left = `${Math.max(0, (pw - width) / 2)}px`
-                el.style.top = `${Math.max(0, (ph - height) / 2)}px`
+                el.style.left = `${Math.max(0, (parent.clientWidth - width) / 2)}px`
+                el.style.top = `${Math.max(0, (parent.clientHeight - height) / 2)}px`
             }
         } else {
             el.style.left = `${x}px`
@@ -81,84 +70,40 @@ export function Frame({ frameId: _frameId, width, height, x, y, zIndex, isModal,
 
     function getParentDims() {
         const parent = divRef.current?.offsetParent as HTMLElement | null
-        return {
-            pw: parent?.clientWidth ?? window.innerWidth,
-            ph: parent?.clientHeight ?? window.innerHeight,
-        }
+        return { pw: parent?.clientWidth ?? window.innerWidth, ph: parent?.clientHeight ?? window.innerHeight }
     }
 
     function constrainPosition(left: number, top: number, w: number) {
         const { pw, ph } = getParentDims()
-        const clampedTop = Math.max(0, Math.min(ph - BORDER - HEADER_HEIGHT, top))
-        const clampedLeft = Math.max(40 - w, Math.min(pw - 40, left))
-        return { left: clampedLeft, top: clampedTop }
+        return {
+            left: Math.max(40 - w, Math.min(pw - 40, left)),
+            top: Math.max(0, Math.min(ph - BORDER - HEADER_HEIGHT, top)),
+        }
     }
 
     function handleMouseMove(e: React.MouseEvent) {
         const el = divRef.current
-        if (!el) return
-
-        if (dragState.current) {
-            e.preventDefault()
-            return
-        }
-
+        if (!el || dragState.current) return
         const rect = el.getBoundingClientRect()
         const relX = e.clientX - rect.left
         const relY = e.clientY - rect.top
         const dir = getResizeDir(relX, relY, rect.width, rect.height)
-
-        if (dir) {
-            el.style.cursor = resizeCursor(dir)
-        } else if (relY < BORDER + HEADER_HEIGHT) {
-            el.style.cursor = 'grab'
-        } else {
-            el.style.cursor = 'default'
-        }
+        if (dir) el.style.cursor = `${dir}-resize`
+        else if (relY < BORDER + HEADER_HEIGHT) el.style.cursor = 'grab'
+        else el.style.cursor = 'default'
     }
 
     function handleMouseDown(e: React.MouseEvent) {
         const el = divRef.current
         if (!el) return
-
-        // Bring to front
         el.style.zIndex = String(getNextZIndex())
-
         const rect = el.getBoundingClientRect()
         const relX = e.clientX - rect.left
         const relY = e.clientY - rect.top
         const dir = getResizeDir(relX, relY, rect.width, rect.height)
-
-        const startLeft = parseInt(el.style.left, 10)
-        const startTop = parseInt(el.style.top, 10)
-        const startWidth = rect.width
-        const startHeight = rect.height
-
-        if (dir) {
-            e.preventDefault()
-            dragState.current = {
-                type: 'resize',
-                dir,
-                startMouseX: e.clientX,
-                startMouseY: e.clientY,
-                startLeft,
-                startTop,
-                startWidth,
-                startHeight,
-            }
-        } else if (relY < BORDER + HEADER_HEIGHT) {
-            e.preventDefault()
-            dragState.current = {
-                type: 'drag',
-                dir: '',
-                startMouseX: e.clientX,
-                startMouseY: e.clientY,
-                startLeft,
-                startTop,
-                startWidth,
-                startHeight,
-            }
-        }
+        const base = { startMouseX: e.clientX, startMouseY: e.clientY, startLeft: parseInt(el.style.left, 10), startTop: parseInt(el.style.top, 10), startWidth: rect.width, startHeight: rect.height }
+        if (dir) { e.preventDefault(); dragState.current = { type: 'resize', dir, ...base } }
+        else if (relY < BORDER + HEADER_HEIGHT) { e.preventDefault(); dragState.current = { type: 'drag', dir: '', ...base } }
     }
 
     useEffect(() => {
@@ -166,60 +111,30 @@ export function Frame({ frameId: _frameId, width, height, x, y, zIndex, isModal,
             const state = dragState.current
             const el = divRef.current
             if (!state || !el) return
-
             const dx = e.clientX - state.startMouseX
             const dy = e.clientY - state.startMouseY
-
             if (state.type === 'drag') {
-                const newLeft = state.startLeft + dx
-                const newTop = state.startTop + dy
-                const { left, top } = constrainPosition(newLeft, newTop, state.startWidth)
+                const { left, top } = constrainPosition(state.startLeft + dx, state.startTop + dy, state.startWidth)
                 el.style.left = `${left}px`
                 el.style.top = `${top}px`
             } else {
                 const dir = state.dir
-                let left = state.startLeft
-                let top = state.startTop
-                let w = state.startWidth
-                let h = state.startHeight
-
+                let left = state.startLeft, top = state.startTop, w = state.startWidth, h = state.startHeight
                 if (dir.includes('e')) w = Math.max(MIN_WIDTH, state.startWidth + dx)
                 if (dir.includes('s')) h = Math.max(MIN_HEIGHT, state.startHeight + dy)
-                if (dir.includes('w')) {
-                    const newW = Math.max(MIN_WIDTH, state.startWidth - dx)
-                    left = state.startLeft + (state.startWidth - newW)
-                    w = newW
-                }
-                if (dir.includes('n')) {
-                    const newH = Math.max(MIN_HEIGHT, state.startHeight - dy)
-                    top = state.startTop + (state.startHeight - newH)
-                    h = newH
-                }
-
-                const { pw, ph } = getParentDims()
-                top = Math.max(0, Math.min(ph - BORDER - HEADER_HEIGHT, top))
-                left = Math.max(40 - w, Math.min(pw - 40, left))
-
-                el.style.left = `${left}px`
-                el.style.top = `${top}px`
+                if (dir.includes('w')) { w = Math.max(MIN_WIDTH, state.startWidth - dx); left = state.startLeft + (state.startWidth - w) }
+                if (dir.includes('n')) { h = Math.max(MIN_HEIGHT, state.startHeight - dy); top = state.startTop + (state.startHeight - h) }
+                const c = constrainPosition(left, top, w)
+                el.style.left = `${c.left}px`
+                el.style.top = `${c.top}px`
                 el.style.width = `${w}px`
                 el.style.height = `${h}px`
             }
         }
-
-        function onMouseUp() {
-            dragState.current = null
-            if (divRef.current) {
-                divRef.current.style.cursor = 'default'
-            }
-        }
-
+        function onMouseUp() { dragState.current = null; if (divRef.current) divRef.current.style.cursor = 'default' }
         document.addEventListener('mousemove', onMouseMove)
         document.addEventListener('mouseup', onMouseUp)
-        return () => {
-            document.removeEventListener('mousemove', onMouseMove)
-            document.removeEventListener('mouseup', onMouseUp)
-        }
+        return () => { document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp) }
     }, [])
 
     return (
@@ -227,33 +142,10 @@ export function Frame({ frameId: _frameId, width, height, x, y, zIndex, isModal,
             ref={divRef}
             onMouseMove={handleMouseMove}
             onMouseDown={handleMouseDown}
-            style={{
-                position: 'absolute',
-                border: `${BORDER}px solid #3a5070`,
-                boxSizing: 'border-box',
-                display: 'flex',
-                flexDirection: 'column',
-                background: '#1e2a38',
-                overflow: 'hidden',
-                userSelect: 'none',
-            }}
+            style={{ position: 'absolute', border: `${BORDER}px solid #3a5070`, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', background: '#1e2a38', overflow: 'hidden', userSelect: 'none' }}
         >
-            <div
-                style={{
-                    height: HEADER_HEIGHT,
-                    flexShrink: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'flex-end',
-                    padding: '0 4px',
-                    background: '#253545',
-                    gap: 2,
-                    cursor: 'inherit',
-                }}
-            >
-                {buttons.map((btn, i) => (
-                    <FrameHeaderButtonComponent key={i} {...btn} />
-                ))}
+            <div style={{ height: HEADER_HEIGHT, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 4px', background: '#253545', gap: 2, cursor: 'inherit' }}>
+                {buttons.map((btn, i) => <FrameHeaderButtonComponent key={i} {...btn} />)}
             </div>
             <div style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
                 {children}
