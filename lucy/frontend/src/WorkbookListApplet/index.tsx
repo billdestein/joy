@@ -23,15 +23,10 @@ type ContextMenu = {
 } | null
 
 function getLastModified(wb: WorkbookType): number {
-    const times = [
-        ...wb.pics.map(p => p.createdAt),
-        ...wb.prompts.map(p => p.createdAt),
-    ]
-    return times.length > 0 ? Math.max(...times) : 0
+    return Math.max(wb.createdAt, ...wb.pics.map(p => p.createdAt))
 }
 
 function formatAgo(ts: number): string {
-    if (ts === 0) return 'N/A'
     const diff = Date.now() - ts
     const minutes = Math.floor(diff / 60000)
     const hours = Math.floor(diff / 3600000)
@@ -45,7 +40,7 @@ function toRowData(wb: WorkbookType): RowData {
     const ts = getLastModified(wb)
     return {
         name: wb.workbookName,
-        lastModifiedISO: ts ? new Date(ts).toISOString() : 'N/A',
+        lastModifiedISO: new Date(ts).toISOString(),
         lastModifiedAgo: formatAgo(ts),
         _workbook: wb,
     }

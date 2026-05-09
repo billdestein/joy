@@ -1,9 +1,15 @@
 import fs from 'fs'
+import os from 'os'
 import path from 'path'
 import { WorkbookType } from '@billdestein/joy-common'
 
+function mountDir(): string {
+    const raw = process.env.MOUNT_DIR!
+    return raw.startsWith('~') ? path.join(os.homedir(), raw.slice(1)) : raw
+}
+
 function workbookDir(slug: string, workbookName: string): string {
-    return path.join(process.env.MOUNT_DIR!, 'users', slug, workbookName)
+    return path.join(mountDir(), 'users', slug, workbookName)
 }
 
 function workbookFile(slug: string, workbookName: string): string {
@@ -22,7 +28,7 @@ export function writeWorkbook(slug: string, workbook: WorkbookType) {
 }
 
 export function listWorkbooks(slug: string): WorkbookType[] {
-    const userDir = path.join(process.env.MOUNT_DIR!, 'users', slug)
+    const userDir = path.join(mountDir(), 'users', slug)
     if (!fs.existsSync(userDir)) return []
     return fs.readdirSync(userDir)
         .filter(name => fs.existsSync(path.join(userDir, name, 'workbook.json')))

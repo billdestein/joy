@@ -77,7 +77,7 @@ Endpoint: /v1/workbooks/create-workbook (POST)
   - workbookName: string
 - Processing:
   - Create a new directory for the workbook
-  - Create a WorkbookType object with no pics and no prompts
+  - Create a WorkbookType object with name and createdAt, but no pics and no prompts
   - Stringify the WorkbookType object and save it in a file named workbook.json
 - Output:
   - None
@@ -145,6 +145,10 @@ Some miscellaneous stuff:
 The backend uses the standard redis client library -- not ioredis
 
 The path for workbooks is: MOUNT_DIR/users/{slug}/{workbookName}/
+
+MOUNT_DIR may begin with ~. Tilde is not expanded when bash assigns environment variables from
+jq output, so the backend must expand it explicitly: replace a leading ~ with os.homedir()
+before constructing any file path.
 
 The backend uses Google's Imagegen API
 

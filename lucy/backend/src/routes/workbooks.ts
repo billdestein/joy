@@ -21,7 +21,7 @@ function getUser(res: Response): User {
 router.post('/create-workbook', (req: Request, res: Response) => {
     const { workbookName } = req.body
     const user = getUser(res)
-    const workbook: WorkbookType = { workbookName, pics: [], prompts: [] }
+    const workbook: WorkbookType = { createdAt: Date.now(), workbookName, pics: [], prompts: [] }
     writeWorkbook(user.slug, workbook)
     res.status(200).end()
 })

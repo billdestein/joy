@@ -35,9 +35,10 @@ export type PromptType = {
 The WorkbookType has many pics and prompts.  WorkbookName is use as the the directory basename.
 
 export type WorkbookType = {
-    workbookName: string 
+    createdAt: number
     pics: PicType[]
     prompts: PromptType[]
+    workbookName: string 
 }
 
 `

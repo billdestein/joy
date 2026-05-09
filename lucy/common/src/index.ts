@@ -17,7 +17,8 @@ export type PromptType = {
 }
 
 export type WorkbookType = {
-    workbookName: string
+    createdAt: number
     pics: PicType[]
     prompts: PromptType[]
+    workbookName: string
 }
