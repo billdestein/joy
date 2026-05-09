@@ -1,79 +1,90 @@
-import { useState, useRef, useEffect, useCallback, type RefObject } from 'react'
-import type { FrameConfig, FrameEntry } from './types'
-import Frame from './Frame'
+import React, { useEffect, useRef, useState } from 'react'
+import { FrameEntry, FrameConfig } from './types'
+import { Frame } from './Frame'
 
-type SetFrames = React.Dispatch<React.SetStateAction<FrameEntry[]>>
+let zCounter = 100
 
-let _setFrames: SetFrames | null = null
-let _nextFrameId = 1
-let _nextZIndex = 100
-
-export const canvas = {
-    addFrame(config: FrameConfig): number {
-        const frameId = _nextFrameId++
-        let entry: FrameEntry
-        if (config.isModal) {
-            // Reserve two slots: click catcher gets z-index one greater than the
-            // nearest (topmost) existing frame; modal sits one above that.
-            const clickCatcherZ = _nextZIndex++
-            const zIndex = _nextZIndex++
-            entry = { ...config, frameId, zIndex, clickCatcherZ }
-        } else {
-            const zIndex = config.zIndex ?? _nextZIndex++
-            entry = { ...config, frameId, zIndex }
-        }
-        _setFrames?.(prev => [...prev, entry])
-        return frameId
-    },
-
-    removeFrame(frameId: number) {
-        _setFrames?.(prev => prev.filter(f => f.frameId !== frameId))
-    },
+export function getNextZ(): number {
+  return ++zCounter
 }
 
-export function CanvasHost() {
-    const [frames, setFrames] = useState<FrameEntry[]>([])
-    const containerRef = useRef<HTMLDivElement>(null)
+export const canvasEl = { current: null as HTMLDivElement | null }
 
-    useEffect(() => {
-        _setFrames = setFrames
-        return () => { _setFrames = null }
-    }, [])
+interface CanvasApi {
+  addFrame(config: FrameConfig): number
+  removeFrame(frameId: number): void
+}
 
-    const onBringToFront = useCallback(() => _nextZIndex++, [])
+let canvasApi: CanvasApi | null = null
 
-    const regular = frames.filter(f => !f.isModal)
-    const modals = frames.filter(f => f.isModal)
+export const canvas = {
+  addFrame(config: FrameConfig): number {
+    if (!canvasApi) throw new Error('Canvas not mounted')
+    return canvasApi.addFrame(config)
+  },
+  removeFrame(frameId: number): void {
+    if (!canvasApi) throw new Error('Canvas not mounted')
+    canvasApi.removeFrame(frameId)
+  },
+}
 
-    return (
-        <div
-            ref={containerRef}
-            style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}
-        >
-            {regular.map(entry => (
-                <Frame
-                    key={entry.frameId}
-                    {...entry}
-                    canvasRef={containerRef as RefObject<HTMLDivElement>}
-                    onBringToFront={onBringToFront}
-                />
-            ))}
-            {modals.length > 0 && (
-                <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'rgba(0,0,0,0.45)',
-                    zIndex: modals[0].clickCatcherZ,
-                }} />
-            )}
-            {modals.map(entry => (
-                <Frame
-                    key={entry.frameId}
-                    {...entry}
-                    canvasRef={containerRef as RefObject<HTMLDivElement>}
-                    onBringToFront={onBringToFront}
-                />
-            ))}
-        </div>
-    )
+export function Canvas() {
+  const [frames, setFrames] = useState<FrameEntry[]>([])
+  const frameCounter = useRef(0)
+  const divRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    canvasEl.current = divRef.current
+
+    canvasApi = {
+      addFrame(config: FrameConfig): number {
+        const frameId = ++frameCounter.current
+        if (config.isModal) {
+          const catcherZ = ++zCounter
+          const frameZ = ++zCounter
+          setFrames(prev => [...prev, { frameId, config, initialZ: frameZ, catcherZ }])
+        } else {
+          const frameZ = ++zCounter
+          setFrames(prev => [...prev, { frameId, config, initialZ: frameZ }])
+        }
+        return frameId
+      },
+      removeFrame(frameId: number): void {
+        setFrames(prev => prev.filter(f => f.frameId !== frameId))
+      },
+    }
+
+    return () => {
+      canvasApi = null
+      canvasEl.current = null
+    }
+  }, [])
+
+  return (
+    <div
+      ref={divRef}
+      style={{
+        flex: 1,
+        position: 'relative',
+        overflow: 'hidden',
+        background: '#222',
+      }}
+    >
+      {frames.map(entry => (
+        <React.Fragment key={entry.frameId}>
+          {entry.catcherZ !== undefined && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: entry.catcherZ,
+                background: 'rgba(0,0,0,0.4)',
+              }}
+            />
+          )}
+          <Frame entry={entry} />
+        </React.Fragment>
+      ))}
+    </div>
+  )
 }

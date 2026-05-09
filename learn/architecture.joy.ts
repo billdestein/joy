@@ -34,9 +34,13 @@ ALl of the EC2 instances mount the same directory on the same EFS network file s
 
 Under the 'mount' directory is a single 'users' directory.
 
-Under the 'users' directory is a directory for each user.  The name of that directory is a slug of the user's email address.
+Under the 'users' directory is a directory for each user.  The name of that directory is a slug of the user's email address.  We call that the user's 'root' directory.
 
-Under the user's directory is a directory for each of the user's workbooks.
+Under the user's root directory is the user's 'workbooks' directory.
+
+The user's workbooks directory has a directory for each workbook with 
+
+Under the user's directory is a directory for each of the user's workbooks.  THe directory name is the same as the workbook name.
 
 Each workbook directory has a single workbook.json file, and some number of image files.
 

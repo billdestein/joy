@@ -10,7 +10,12 @@ The WorkbookListApplet is implemented in the file lucy/frontend/src/WorkbookList
 
 At initialization, a WorkbookListWidget calls the list-workbooks endpoint on the backend servver.
 
-The WorkbookListWidget has an AG Grid React that fills the frame body.  
+The WorkbookListWidget has an AG Grid React that fills the frame body.
+
+Use ag-grid-community and ag-grid-react version ^30.0.0.
+Import 'ag-grid-community/styles/ag-grid.css' and 'ag-grid-community/styles/ag-theme-alpine.css'.
+Use className "ag-theme-alpine" on the grid container div.
+
 
 The grid has one row for each workbook returned from the backend.
 

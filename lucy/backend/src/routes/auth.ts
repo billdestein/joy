@@ -6,36 +6,45 @@ import { findOrCreateUser } from '../user'
 
 const router = Router()
 
-const jwksUrl = () =>
-    new URL(`https://cognito-idp.${process.env.COGNITO_REGION}.amazonaws.com/${process.env.COGNITO_USER_POOL_ID}/.well-known/jwks.json`)
-
-router.post('/login', async (req: Request, res: Response) => {
-    const authHeader = req.headers.authorization
-    if (!authHeader?.startsWith('Bearer ')) {
-        res.status(401).json({ error: 'Missing authorization header' })
-        return
-    }
-    const idToken = authHeader.slice(7)
+router.post('/login', async (req: Request, res: Response): Promise<void> => {
     try {
-        const JWKS = createRemoteJWKSet(jwksUrl())
-        const { payload } = await jwtVerify(idToken, JWKS)
-        const email = payload.email as string
-        if (!email) {
-            res.status(401).json({ error: 'No email in token' })
+        const authHeader = req.headers.authorization
+        if (!authHeader) {
+            res.status(401).json({ error: 'Missing authorization header' })
             return
         }
-        findOrCreateUser(email)
+
+        const idToken = authHeader.replace(/^Bearer\s+/i, '')
+        const region = process.env.COGNITO_REGION!
+        const userPoolId = process.env.COGNITO_USER_POOL_ID!
+        const jwksUrl = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}/.well-known/jwks.json`
+
+        const JWKS = createRemoteJWKSet(new URL(jwksUrl))
+        const { payload } = await jwtVerify(idToken, JWKS, {
+            issuer: `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`,
+        })
+
+        const email = payload.email as string | undefined
+        if (!email) {
+            res.status(401).json({ error: 'Email not found in token' })
+            return
+        }
+
         const sessionId = uuidv4()
         await setSession(sessionId, email)
+        findOrCreateUser(email)
+
         res.cookie('sessionId', sessionId, {
             httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             maxAge: 3600 * 1000,
         })
+
         res.status(200).end()
     } catch (err) {
         console.error('Login error:', err)
-        res.status(401).json({ error: 'Invalid token' })
+        res.status(401).json({ error: 'Authentication failed' })
     }
 })
 

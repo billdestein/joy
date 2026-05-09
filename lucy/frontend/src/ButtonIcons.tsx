@@ -1,41 +1,21 @@
-import { BsArrowLeftShort } from 'react-icons/bs'
-import { BsChevronLeft } from 'react-icons/bs'
-import { BsChevronRight } from 'react-icons/bs'
-import { BsFile } from 'react-icons/bs'
-import { BsFolder } from 'react-icons/bs'
-import { BsGear } from 'react-icons/bs'
-import { BsPlay } from 'react-icons/bs'
-import { BsPlusLg } from 'react-icons/bs'
-import { BsTrash } from 'react-icons/bs'
-import { BsUpload } from 'react-icons/bs'
-import { BsX } from 'react-icons/bs'
-import { BsSkipBackwardFill } from 'react-icons/bs'
-import { BsSkipForwardFill } from 'react-icons/bs'
-import { FaArrowCircleLeft } from 'react-icons/fa'
-import { FaArrowCircleRight } from 'react-icons/fa'
-import { FaRegSave } from 'react-icons/fa'
-import { FaSave } from 'react-icons/fa'
-import { FaRegCopy } from 'react-icons/fa6'
+import React from 'react'
 
-const size = 18
+const iconStyle: React.CSSProperties = { width: 14, height: 14, display: 'block' }
 
 export const ButtonIcons = {
-    back: <BsArrowLeftShort size={size} />,
-    goLeft: <BsChevronLeft size={size} />,
-    goRight: <BsChevronRight size={size} />,
-    faRegCopy: <FaRegCopy size={16} />,
-    file: <BsFile size={size} />,
-    folder: <BsFolder size={size} />,
-    gear: <BsGear size={size} />,
-    next: <FaArrowCircleRight size={size} />,
-    play: <BsPlay size={size} />,
-    plus: <BsPlusLg size={16} />,
-    previous: <FaArrowCircleLeft size={size} />,
-    trash: <BsTrash size={size} />,
-    upload: <BsUpload size={14} />,
-    x: <BsX size={20} />,
-    save: <FaRegSave size={size} />,
-    saveAs: <FaSave size={size} />,
-    skipBackward: <BsSkipBackwardFill size={size} />,
-    skipForward: <BsSkipForwardFill size={size} />,
+  plus: (
+    <svg style={iconStyle} viewBox="0 0 14 14" fill="currentColor">
+      <path d="M6 0h2v6h6v2H8v6H6V8H0V6h6z" />
+    </svg>
+  ),
+  upload: (
+    <svg style={iconStyle} viewBox="0 0 14 14" fill="currentColor">
+      <path d="M7 0L2 5h3v5h4V5h3L7 0zm-5 12h10v2H2v-2z" />
+    </svg>
+  ),
+  close: (
+    <svg style={iconStyle} viewBox="0 0 14 14" fill="currentColor">
+      <path d="M1.4 0L0 1.4 5.6 7 0 12.6 1.4 14 7 8.4l5.6 5.6 1.4-1.4L8.4 7l5.6-5.6L12.6 0 7 5.6 1.4 0z" />
+    </svg>
+  ),
 }

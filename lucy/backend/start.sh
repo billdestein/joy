@@ -2,10 +2,16 @@
 set -e
 
 CONFIG_FILE="$HOME/lucy-config/BackendLocalConfig.json"
-
-if [ "$NODE_ENV" = "production" ]; then
-  CONFIG_FILE="$HOME/lucy-config/BackendProdConfig.json"
+if [ "${NODE_ENV}" = "production" ]; then
+    CONFIG_FILE="$HOME/lucy-config/BackendProdConfig.json"
 fi
+
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "Config file not found: $CONFIG_FILE"
+    exit 1
+fi
+
+(cd "$(dirname "$0")/../common" && npm run build)
 
 export COGNITO_REGION=$(jq -r '.COGNITO_REGION' "$CONFIG_FILE")
 export COGNITO_USER_POOL_ID=$(jq -r '.COGNITO_USER_POOL_ID' "$CONFIG_FILE")

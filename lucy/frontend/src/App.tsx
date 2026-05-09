@@ -1,65 +1,86 @@
-import { useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useAuth } from 'react-oidc-context'
-import { CanvasHost } from './Frames'
-import MainMenuComponent from './MainMenuComponent'
+import { Canvas } from './Frames/Canvas'
+import { MainMenuComponent } from './MainMenuComponent'
+
+const BACKEND = 'http://localhost:8080'
 
 export default function App() {
-    const auth = useAuth()
-    const backendLoginCalled = useRef(false)
+  const auth = useAuth()
+  const backendLoginDone = useRef(false)
 
-    useEffect(() => {
-        if (auth.isAuthenticated && auth.user?.id_token && !backendLoginCalled.current) {
-            backendLoginCalled.current = true
-            fetch('/v1/auth/login', {
-                method: 'POST',
-                credentials: 'include',
-                headers: { Authorization: `Bearer ${auth.user.id_token}` },
-            }).catch(console.error)
-        }
-    }, [auth.isAuthenticated, auth.user?.id_token])
-
-    if (auth.isLoading) {
-        return <div style={fullscreen('#000')} />
+  useEffect(() => {
+    if (auth.isAuthenticated && auth.user && !backendLoginDone.current) {
+      backendLoginDone.current = true
+      fetch(`${BACKEND}/v1/auth/login`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { Authorization: `Bearer ${auth.user.id_token}` },
+      }).catch(err => console.error('Backend login error:', err))
     }
+  }, [auth.isAuthenticated, auth.user])
 
-    if (!auth.isAuthenticated) {
-        return (
-            <div style={{ ...fullscreen('#000'), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ color: 'gold', fontSize: 48, fontWeight: 'bold', fontFamily: 'sans-serif' }}>
-                    Lucy
-                </div>
-                <button
-                    onClick={() => auth.signinRedirect()}
-                    style={{
-                        position: 'absolute',
-                        top: 16,
-                        right: 16,
-                        background: 'transparent',
-                        border: '1px solid gold',
-                        color: 'gold',
-                        padding: '6px 16px',
-                        borderRadius: 4,
-                        cursor: 'pointer',
-                        fontSize: 14,
-                        fontFamily: 'sans-serif',
-                    }}
-                >
-                    Sign In
-                </button>
-            </div>
-        )
-    }
-
+  if (auth.isLoading) {
     return (
-        <div style={{ ...fullscreen('#111'), display: 'flex', flexDirection: 'column' }}>
-            <MainMenuComponent />
-            <div style={{ flex: 1, overflow: 'hidden' }}>
-                <CanvasHost />
-            </div>
-        </div>
+      <div style={styles.splash}>
+        <span style={styles.title}>Lucy</span>
+      </div>
     )
+  }
+
+  if (!auth.isAuthenticated) {
+    return (
+      <div style={styles.splash}>
+        <span style={styles.title}>Lucy</span>
+        <button style={styles.signinBtn} onClick={() => auth.signinRedirect()}>
+          Sign In
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div style={styles.appContainer}>
+      <MainMenuComponent />
+      <Canvas />
+    </div>
+  )
 }
 
-function fullscreen(bg: string): React.CSSProperties {
-    return { width: '100%', height: '100%', background: bg, position: 'relative' }
+const styles: Record<string, React.CSSProperties> = {
+  splash: {
+    width: '100vw',
+    height: '100vh',
+    background: 'black',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  title: {
+    color: 'gold',
+    fontSize: 64,
+    fontFamily: 'serif',
+    letterSpacing: 8,
+  },
+  signinBtn: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    padding: '8px 16px',
+    background: 'transparent',
+    color: 'gold',
+    border: '1px solid gold',
+    borderRadius: 4,
+    cursor: 'pointer',
+    fontSize: 14,
+  },
+  appContainer: {
+    width: '100vw',
+    height: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    background: '#1a1a1a',
+    overflow: 'hidden',
+  },
 }

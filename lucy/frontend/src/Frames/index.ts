@@ -1,3 +1,4 @@
-export { canvas, CanvasHost } from './Canvas'
-export { default as FrameHeaderButtonComponent } from './FrameHeaderButtonComponent'
-export type { Button, FrameConfig, FrameEntry } from './types'
+export { canvas, Canvas } from './Canvas'
+export { Frame } from './Frame'
+export { FrameHeaderButtonComponent } from './FrameHeaderButtonComponent'
+export type { ButtonConfig, FrameConfig, FrameEntry } from './types'

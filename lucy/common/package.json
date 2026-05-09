@@ -1,6 +1,7 @@
 {
   "name": "@billdestein/joy-common",
   "version": "1.0.0",
+  "description": "Shared types for Lucy",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -8,6 +9,6 @@
     "watch": "tsc --watch"
   },
   "devDependencies": {
-    "typescript": "^5.4.0"
+    "typescript": "^5.0.0"
   }
 }

@@ -16,6 +16,10 @@ The backend uses:
 The backend repo contains a startup script that reads a configuration file from the filesystem,
 assigns environment variables, and then starts the express server.
 
+Before starting the server, the startup script must build the common package by running
+'npm run build' in the lucy/common directory. The common package is a TypeScript source-only
+package and ts-node cannot resolve it unless its dist/ directory exists.
+
 When running in local mode, the startup script reads the file ~/lucy-config/BackendLocalConfig.json.
 When running in prod mode, the startup script reads the file ~/lucy-config/BackendProdConfig.json.
 
@@ -76,7 +80,7 @@ Endpoint: /v1/workbooks/create-workbook (POST)
 - Input:
   - workbookName: string
 - Processing:
-  - Create a new directory for the workbook
+  - Create a new directory for the workbook in the user's 'workbooks' directory.
   - Create a WorkbookType object with name and createdAt, but no pics and no prompts
   - Stringify the WorkbookType object and save it in a file named workbook.json
 - Output:
