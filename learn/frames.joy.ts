@@ -34,21 +34,7 @@ the outer frame edge.  onMouseDown uses the same geometry to decide whether to s
 resize (near an edge) or a drag (in the header area but not near an edge).  The header
 area is defined as the top (border + header height) pixels of the frame.
 
-The frame header contains zero or more right-aligned buttons.  
-
-A button looks like this in the code:
-
-type Button = {
-  icon: React.JSX.Element
-  key: string
-  onClick: () => void
-  tip: string
-}
-
-When the cursor hovers over a button, the background color of the button changes 
-to something different but complementary.  The tool tip is immediately visible on 
-mouse over.  The tool tips are absolutely positioned, appear above their corresponding 
-button, and can extend beyond the frame boundary.
+The frame header contains zero or more right-aligned FrameHeaderButtonComponents.  
 
 The Frame has these props:
 

@@ -1,10 +1,57 @@
 import { canvas } from '../Frames'
 import { ButtonIcons } from '../ButtonIcons'
 import WorkbookListApplet from '../WorkbookListApplet'
+import GetWorkbookNameApplet from '../GetWorkbookNameApplet'
+import UploadWorkbookApplet from '../UploadWorkbookApplet'
 
 export default function MainMenuComponent() {
     const handleWorkbooks = () => {
         let frameId: number
+        const refreshRef: { current: (() => void) | null } = { current: null }
+
+        const openNewWorkbook = () => {
+            let modalId: number
+            modalId = canvas.addFrame({
+                isModal: true,
+                width: 340,
+                height: 150,
+                x: 0,
+                y: 0,
+                children: (
+                    <GetWorkbookNameApplet
+                        frameId={modalId!}
+                        onOk={(name) => {
+                            fetch('/v1/workbooks/create-workbook', {
+                                method: 'POST',
+                                credentials: 'include',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ workbookName: name }),
+                            })
+                                .then(() => refreshRef.current?.())
+                                .catch(console.error)
+                        }}
+                    />
+                ),
+            })
+        }
+
+        const openUploadWorkbook = () => {
+            let modalId: number
+            modalId = canvas.addFrame({
+                isModal: true,
+                width: 300,
+                height: 140,
+                x: 0,
+                y: 0,
+                children: (
+                    <UploadWorkbookApplet
+                        frameId={modalId!}
+                        onComplete={() => refreshRef.current?.()}
+                    />
+                ),
+            })
+        }
+
         frameId = canvas.addFrame({
             width: 640,
             height: 420,
@@ -12,13 +59,27 @@ export default function MainMenuComponent() {
             y: 60,
             buttons: [
                 {
+                    key: 'plus',
+                    icon: ButtonIcons.plus,
+                    tooltipLabel: 'New Workbook',
+                    handler: openNewWorkbook,
+                },
+                {
+                    key: 'upload',
+                    icon: ButtonIcons.upload,
+                    tooltipLabel: 'Add Workbook',
+                    handler: openUploadWorkbook,
+                },
+                {
                     key: 'close',
                     icon: ButtonIcons.x,
-                    tip: 'Close',
-                    onClick: () => canvas.removeFrame(frameId),
+                    tooltipLabel: 'Close',
+                    handler: () => canvas.removeFrame(frameId),
                 },
             ],
-            children: <WorkbookListApplet />,
+            children: (
+                <WorkbookListApplet onReady={(fn) => { refreshRef.current = fn }} />
+            ),
         })
     }
 

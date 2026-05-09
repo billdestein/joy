@@ -2,9 +2,10 @@ import { canvas } from '../Frames'
 
 type Props = {
     frameId: number
+    onComplete?: () => void
 }
 
-export default function UploadWorkbookApplet({ frameId }: Props) {
+export default function UploadWorkbookApplet({ frameId, onComplete }: Props) {
     return (
         <div style={{
             padding: 20,

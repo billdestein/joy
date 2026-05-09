@@ -5,6 +5,10 @@ import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
 import type { WorkbookType } from '@billdestein/joy-common'
 
+type Props = {
+    onReady?: (refresh: () => void) => void
+}
+
 type RowData = {
     name: string
     lastModifiedISO: string
@@ -53,17 +57,22 @@ const COL_DEFS: ColDef<RowData>[] = [
     { field: 'lastModifiedAgo', headerName: 'Age', sortable: false, width: 140 },
 ]
 
-export default function WorkbookListApplet() {
+export default function WorkbookListApplet({ onReady }: Props) {
     const [rows, setRows] = useState<RowData[]>([])
     const [contextMenu, setContextMenu] = useState<ContextMenu>(null)
     const containerRef = useRef<HTMLDivElement>(null)
 
-    useEffect(() => {
+    const loadWorkbooks = useCallback(() => {
         fetch('/v1/workbooks/list-workbooks', { credentials: 'include' })
             .then(r => r.json())
             .then(data => setRows((data.workbooks as WorkbookType[]).map(toRowData)))
             .catch(console.error)
     }, [])
+
+    useEffect(() => {
+        loadWorkbooks()
+        onReady?.(loadWorkbooks)
+    }, [loadWorkbooks, onReady])
 
     const onCellContextMenu = useCallback((e: CellContextMenuEvent<RowData>) => {
         const mouseEvent = e.event as MouseEvent

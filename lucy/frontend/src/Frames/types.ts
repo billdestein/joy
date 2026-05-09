@@ -3,8 +3,8 @@ import type { ReactNode, JSX, RefObject } from 'react'
 export type Button = {
     icon: JSX.Element
     key: string
-    onClick: () => void
-    tip: string
+    handler: () => void
+    tooltipLabel: string
 }
 
 export type FrameConfig = {

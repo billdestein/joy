@@ -32,4 +32,34 @@ pops up, with its uper left corner at the cursor position when the click event h
 The context menu has two choices.  Open and delete.  For now, the open callback function
 simply logs 'open', and the delete callback function simply logs 'delete'
 
+The surrounding frame has these three FrameHeaderButtonComponents:
+
+{
+    icon: ButtonIcons.plus
+    toolTipLabel: 'New Workbook'
+    Handler: addWorkbook (see details below)
+}
+
+{
+    icon: ButtonIcons.upload
+    toolTipLabel: 'Add Workbook'
+    Handler: uploadWorkbook (see details below)
+}
+
+{
+    icon: ButtonIcons.close
+    toolTipLabel: 'Close'
+    Handler: Call Canvas.removeFrame
+}
+
+The addNotebookNandler function creates an instance of the GetWorkbookNameApplet.  The
+GetWorkbookNameApplet calls it's callback function with a name for the new workbook.
+The callback function then makes an API call to the backend's create-workbook endpoint.
+
+
+The uploaWorkbook function creates an instance of the UploadWorkbookApplet.  The 
+UploadWorkbookApplet calls its callback function when complete.  The callback
+function refreshes the grid.
+
+
 `

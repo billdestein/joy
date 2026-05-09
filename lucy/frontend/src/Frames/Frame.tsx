@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
-import type { FrameProps, Button } from './types'
+import { useEffect, useRef } from 'react'
+import type { FrameProps } from './types'
+import FrameHeaderButtonComponent from './FrameHeaderButtonComponent'
 
 const BORDER = 5
 const HEADER_HEIGHT = 30
@@ -191,7 +191,14 @@ export default function Frame({
                 padding: '0 4px',
                 gap: 2,
             }}>
-                {buttons.map(btn => <FrameButton key={btn.key} button={btn} />)}
+                {buttons.map(btn => (
+                    <FrameHeaderButtonComponent
+                        key={btn.key}
+                        icon={btn.icon}
+                        handler={btn.handler}
+                        tooltipLabel={btn.tooltipLabel}
+                    />
+                ))}
             </div>
             <div style={{ flex: 1, overflow: 'auto', userSelect: 'text' }}>
                 {children}
@@ -200,58 +207,3 @@ export default function Frame({
     )
 }
 
-function FrameButton({ button }: { button: Button }) {
-    const [hovered, setHovered] = useState(false)
-    const btnRef = useRef<HTMLDivElement>(null)
-    const [tipPos, setTipPos] = useState({ left: 0, top: 0 })
-
-    return (
-        <>
-            <div
-                ref={btnRef}
-                data-frame-button="true"
-                onClick={button.onClick}
-                onMouseEnter={() => {
-                    if (btnRef.current) {
-                        const r = btnRef.current.getBoundingClientRect()
-                        setTipPos({ left: r.left + r.width / 2, top: r.top })
-                    }
-                    setHovered(true)
-                }}
-                onMouseLeave={() => setHovered(false)}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '2px 5px',
-                    borderRadius: 3,
-                    cursor: 'pointer',
-                    color: '#ccc',
-                    background: hovered ? '#4a4a6a' : 'transparent',
-                    transition: 'background 0.1s',
-                    position: 'relative',
-                }}
-            >
-                {button.icon}
-            </div>
-            {hovered && createPortal(
-                <div style={{
-                    position: 'fixed',
-                    left: tipPos.left,
-                    top: tipPos.top - 6,
-                    transform: 'translate(-50%, -100%)',
-                    background: '#333',
-                    color: '#eee',
-                    padding: '3px 8px',
-                    borderRadius: 4,
-                    fontSize: 12,
-                    whiteSpace: 'nowrap',
-                    pointerEvents: 'none',
-                    zIndex: 99999,
-                }}>
-                    {button.tip}
-                </div>,
-                document.body
-            )}
-        </>
-    )
-}
