@@ -3,6 +3,7 @@ import { joyLearn as learn } from './learn/language.joy.ts'
 import { architecture } from './learn/architecture.joy.ts'
 import { backend } from './learn/backend.joy.ts'
 import { common } from './learn/common.joy.ts'
+import { ComposerComponent } from './learn/ComposerComponent.joy.ts'
 // import { backendTest } from './learn/backend-test.joy.ts'
 import { frames } from './learn/frames.joy.ts'
 import { FrameHeaderButtonComponent } from './learn/FrameHeaderButtonComponent.joy.ts'
@@ -32,6 +33,8 @@ learn(backend)
 // learn(backendTest)
 
 learn(common)
+
+learn(ComposerComponent)
 
 learn(MainMenuComponent)
 

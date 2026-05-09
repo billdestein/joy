@@ -3,6 +3,12 @@
 //----------------------------------------------------------------------------------------------------
 export const ComposerComponent = `
 
-The viewer component simply shows the text "Commposer"
+The composer component contains a ComposerEditorComponent and a ComposerButtonRowComponent.
+
+The ComposerButtonRowComponent goes at the bottom of the ComposerComponent viewport and is 
+of fixed height.
+
+The ComposerEditorComponent goes at the top of the ComposerComponent viewport and fills
+the remaining vertical space.
 
 `
