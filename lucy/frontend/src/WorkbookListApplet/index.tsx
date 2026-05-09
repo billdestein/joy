@@ -8,7 +8,7 @@ import { canvas } from '../Frames/Canvas'
 import { ButtonIcons } from '../ButtonIcons'
 import { GetWorkbookNameApplet } from '../GetWorkbookNameApplet'
 import { UploadWorkbookApplet } from '../UploadWorkbookApplet'
-import { WorkbookApplet } from '../WorkbookApplet'
+import { openWorkbookApplet } from '../WorkbookApplet'
 
 const BACKEND = 'http://localhost:8080'
 
@@ -105,22 +105,7 @@ export function WorkbookListApplet({ onClose: _onClose, onRegisterRefresh }: Pro
 
   function handleOpen(workbookName: string) {
     setContextMenu(null)
-    let frameId: number
-    frameId = canvas.addFrame({
-      x: 80,
-      y: 60,
-      width: 800,
-      height: 600,
-      buttons: [
-        { icon: ButtonIcons.close, toolTipLabel: 'Close', handler: () => canvas.removeFrame(frameId) },
-      ],
-      children: (
-        <WorkbookApplet
-          workbookName={workbookName}
-          onClose={() => canvas.removeFrame(frameId)}
-        />
-      ),
-    })
+    openWorkbookApplet(workbookName)
   }
 
   function handleDelete(workbookName: string) {

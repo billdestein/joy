@@ -10,6 +10,7 @@ import { GetWorkbookNameApplet } from './learn/GetWorkbookNameApplet.joy.ts'
 import { MainMenuComponent } from './learn/MainMenu.joy.ts'
 import { UploadWorkbookApplet } from './learn/UploadWorkbookApplet.joy.ts'
 import { WorkbookListApplet } from './learn/WorkbookListApplet.joy.ts'
+import { WorkbookApplet } from './learn/WorkbookApplet.joy.ts'
 // import { framesTest } from './learn/frames-test.joy.ts'
 import { frontend } from './learn/frontend.joy.ts'
 
@@ -41,6 +42,8 @@ learn(GetWorkbookNameApplet)
 learn(UploadWorkbookApplet)
 
 learn(WorkbookListApplet)
+
+learn(WorkbookApplet)
 
 // learn(framesTest)
 
