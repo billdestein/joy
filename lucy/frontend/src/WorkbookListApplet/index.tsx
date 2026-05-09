@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { ColDef } from 'ag-grid-community'
+import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community'
 import { WorkbookType } from '@billdestein/joy-common'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
@@ -8,6 +8,7 @@ import { canvas } from '../Frames/Canvas'
 import { ButtonIcons } from '../ButtonIcons'
 import { GetWorkbookNameApplet } from '../GetWorkbookNameApplet'
 import { UploadWorkbookApplet } from '../UploadWorkbookApplet'
+import { WorkbookApplet } from '../WorkbookApplet'
 
 const BACKEND = 'http://localhost:8080'
 
@@ -55,12 +56,12 @@ interface Props {
 export function WorkbookListApplet({ onClose: _onClose, onRegisterRefresh }: Props) {
   const [rowData, setRowData] = useState<RowData[]>([])
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
+  const gridApiRef = useRef<GridApi<RowData> | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const fetchWorkbooks = useCallback(async () => {
     try {
-      const res = await fetch(`${BACKEND}/v1/workbooks/list-workbooks`, {
-        credentials: 'include',
-      })
+      const res = await fetch(`${BACKEND}/v1/workbooks/list-workbooks`, { credentials: 'include' })
       if (!res.ok) return
       const data = (await res.json()) as { workbooks: WorkbookType[] }
       setRowData(toRowData(data.workbooks))
@@ -74,6 +75,26 @@ export function WorkbookListApplet({ onClose: _onClose, onRegisterRefresh }: Pro
     onRegisterRefresh?.(fetchWorkbooks)
   }, [fetchWorkbooks, onRegisterRefresh])
 
+  // Native contextmenu listener — reliable across AG Grid versions
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    function handleContextMenu(e: MouseEvent) {
+      e.preventDefault()
+      const rowEl = (e.target as Element).closest<HTMLElement>('.ag-row')
+      if (!rowEl) return
+      const rowIndex = parseInt(rowEl.getAttribute('row-index') ?? '-1', 10)
+      if (rowIndex < 0) return
+      const node = gridApiRef.current?.getDisplayedRowAtIndex(rowIndex)
+      if (!node?.data) return
+      setContextMenu({ x: e.clientX, y: e.clientY, workbookName: node.data.workbookName })
+    }
+
+    container.addEventListener('contextmenu', handleContextMenu)
+    return () => container.removeEventListener('contextmenu', handleContextMenu)
+  }, [])
+
   // Close context menu on outside click
   useEffect(() => {
     if (!contextMenu) return
@@ -82,15 +103,24 @@ export function WorkbookListApplet({ onClose: _onClose, onRegisterRefresh }: Pro
     return () => document.removeEventListener('click', handler)
   }, [contextMenu])
 
-  function onContextMenu(e: React.MouseEvent, workbookName: string) {
-    e.preventDefault()
-    e.stopPropagation()
-    setContextMenu({ x: e.clientX, y: e.clientY, workbookName })
-  }
-
   function handleOpen(workbookName: string) {
-    console.log('open', workbookName)
     setContextMenu(null)
+    let frameId: number
+    frameId = canvas.addFrame({
+      x: 80,
+      y: 60,
+      width: 800,
+      height: 600,
+      buttons: [
+        { icon: ButtonIcons.close, toolTipLabel: 'Close', handler: () => canvas.removeFrame(frameId) },
+      ],
+      children: (
+        <WorkbookApplet
+          workbookName={workbookName}
+          onClose={() => canvas.removeFrame(frameId)}
+        />
+      ),
+    })
   }
 
   function handleDelete(workbookName: string) {
@@ -99,17 +129,13 @@ export function WorkbookListApplet({ onClose: _onClose, onRegisterRefresh }: Pro
   }
 
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <div className="ag-theme-alpine" style={{ width: '100%', height: '100%' }}>
+    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <div className="ag-theme-alpine-dark" style={{ width: '100%', height: '100%' }}>
         <AgGridReact
           rowData={rowData}
           columnDefs={colDefs}
           rowSelection="single"
-          onRowContextMenu={(e) => {
-            if (e.event && e.data) {
-              onContextMenu(e.event as unknown as React.MouseEvent, e.data.workbookName)
-            }
-          }}
+          onGridReady={(e: GridReadyEvent<RowData>) => { gridApiRef.current = e.api }}
         />
       </div>
       {contextMenu && (
@@ -127,18 +153,8 @@ export function WorkbookListApplet({ onClose: _onClose, onRegisterRefresh }: Pro
           }}
           onClick={e => e.stopPropagation()}
         >
-          <div
-            style={menuItemStyle}
-            onClick={() => handleOpen(contextMenu.workbookName)}
-          >
-            Open
-          </div>
-          <div
-            style={menuItemStyle}
-            onClick={() => handleDelete(contextMenu.workbookName)}
-          >
-            Delete
-          </div>
+          <div style={menuItemStyle} onClick={() => handleOpen(contextMenu.workbookName)}>Open</div>
+          <div style={menuItemStyle} onClick={() => handleDelete(contextMenu.workbookName)}>Delete</div>
         </div>
       )}
     </div>

@@ -3,16 +3,17 @@ import { ButtonConfig } from './types'
 
 export function FrameHeaderButtonComponent({ icon, toolTipLabel, handler }: ButtonConfig) {
   const [showTip, setShowTip] = useState(false)
+  const [hovered, setHovered] = useState(false)
 
   return (
     <div style={{ position: 'relative', display: 'inline-flex' }}>
       <button
-        onMouseEnter={() => setShowTip(true)}
-        onMouseLeave={() => setShowTip(false)}
+        onMouseEnter={() => { setShowTip(true); setHovered(true) }}
+        onMouseLeave={() => { setShowTip(false); setHovered(false) }}
         onMouseDown={e => e.stopPropagation()}
         onClick={e => { e.stopPropagation(); handler() }}
         style={{
-          background: 'transparent',
+          background: hovered ? '#555' : 'transparent',
           border: 'none',
           cursor: 'pointer',
           color: '#ccc',
@@ -30,7 +31,7 @@ export function FrameHeaderButtonComponent({ icon, toolTipLabel, handler }: Butt
         <div
           style={{
             position: 'absolute',
-            top: '100%',
+            bottom: '100%',
             right: 0,
             background: '#333',
             color: '#eee',
@@ -40,6 +41,7 @@ export function FrameHeaderButtonComponent({ icon, toolTipLabel, handler }: Butt
             whiteSpace: 'nowrap',
             pointerEvents: 'none',
             zIndex: 9999,
+            marginBottom: 4,
           }}
         >
           {toolTipLabel}

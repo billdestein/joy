@@ -13,9 +13,11 @@ The FrameButtonComponent has these props:
 - Handler: () => void
 - Tooltip label: string
 
-The Tooltip appears above the button and may extend beyond the frame boundary.
+Each button has a tooltip.  On mouse over the icon, the tooltip immediately appears vertically 
+above its corresponding icon.  The tooltip is positioned absolutely so that it can extend
+ beyond the border of the frame.
 
 When the mouse hovers over the button, the background color changes to something different
-but complimentary.  And the tooltip appears immediately.
+but complimentary.
 
 `
