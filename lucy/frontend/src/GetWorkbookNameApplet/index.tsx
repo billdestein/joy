@@ -1,28 +1,23 @@
 import { useRef } from 'react'
-import { canvas } from '../Frames'
 
 type Props = {
-    frameId: number
+    onClose: () => void
     onOk: (name: string) => void
 }
 
-export default function GetWorkbookNameApplet({ frameId, onOk }: Props) {
+export default function GetWorkbookNameApplet({ onClose, onOk }: Props) {
     const inputRef = useRef<HTMLInputElement>(null)
 
     const handleOk = () => {
         const name = inputRef.current?.value.trim() ?? ''
         if (!name) return
         onOk(name)
-        canvas.removeFrame(frameId)
-    }
-
-    const handleCancel = () => {
-        canvas.removeFrame(frameId)
+        onClose()
     }
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') handleOk()
-        if (e.key === 'Escape') handleCancel()
+        if (e.key === 'Escape') onClose()
     }
 
     return (
@@ -52,7 +47,7 @@ export default function GetWorkbookNameApplet({ frameId, onOk }: Props) {
                 }}
             />
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                <button onClick={handleCancel} style={btnStyle('#333')}>Cancel</button>
+                <button onClick={onClose} style={btnStyle('#333')}>Cancel</button>
                 <button onClick={handleOk} style={btnStyle('#3a5a9a')}>OK</button>
             </div>
         </div>

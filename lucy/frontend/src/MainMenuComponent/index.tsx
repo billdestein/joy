@@ -19,7 +19,7 @@ export default function MainMenuComponent() {
                 y: 0,
                 children: (
                     <GetWorkbookNameApplet
-                        frameId={modalId!}
+                        onClose={() => canvas.removeFrame(modalId)}
                         onOk={(name) => {
                             fetch('/v1/workbooks/create-workbook', {
                                 method: 'POST',
@@ -45,7 +45,7 @@ export default function MainMenuComponent() {
                 y: 0,
                 children: (
                     <UploadWorkbookApplet
-                        frameId={modalId!}
+                        onClose={() => canvas.removeFrame(modalId)}
                         onComplete={() => refreshRef.current?.()}
                     />
                 ),

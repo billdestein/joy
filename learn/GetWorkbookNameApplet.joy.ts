@@ -13,9 +13,12 @@ A string "Enter a name for the new workbook",
 
 And an ok button and a cancel button.
 
-The ok button handler calls the callback function passing the value from the text input file,
-and then closes the modal frame.
+The applet receives an 'onClose: () => void' callback prop. It does not receive a frameId prop.
+Calling onClose() removes the surrounding frame from the canvas.
 
-The cancel button handler simply closes the modal frame.
+The ok button handler checks that the text area is not empty. If not empty, it calls the onOk callback
+passing the value from the text input, then calls onClose().
+
+The cancel button handler calls onClose().
 
 `

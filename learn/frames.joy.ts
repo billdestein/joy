@@ -67,4 +67,10 @@ When moving a frame left and right, they will be clipped by the canvas, but neve
 
 The frame can only be move down to the point where the bottom of the header touches the bottom of the canvas.
 
+When an applet needs to close its own surrounding frame, the caller passes an onClose: () => void callback —
+for example onClose={() => canvas.removeFrame(frameId)} — rather than passing frameId directly as a prop.
+JSX prop values are evaluated eagerly when the object literal is constructed, before canvas.addFrame() returns,
+so a frameId prop would always be undefined. A callback closure avoids this because it reads frameId at
+call time, not at construction time.
+
 `

@@ -1,11 +1,9 @@
-import { canvas } from '../Frames'
-
 type Props = {
-    frameId: number
+    onClose: () => void
     onComplete?: () => void
 }
 
-export default function UploadWorkbookApplet({ frameId, onComplete }: Props) {
+export default function UploadWorkbookApplet({ onClose }: Props) {
     return (
         <div style={{
             padding: 20,
@@ -19,7 +17,7 @@ export default function UploadWorkbookApplet({ frameId, onComplete }: Props) {
             <div style={{ fontSize: 14 }}>Upload</div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <button
-                    onClick={() => canvas.removeFrame(frameId)}
+                    onClick={onClose}
                     style={{
                         background: '#333',
                         border: 'none',
