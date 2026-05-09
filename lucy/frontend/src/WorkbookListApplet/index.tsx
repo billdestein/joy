@@ -1,109 +1,145 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { ColDef, CellContextMenuEvent } from 'ag-grid-community'
+import type { ColDef, CellContextMenuEvent } from 'ag-grid-community'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
-import { WorkbookType } from '@billdestein/joy-common'
+import type { WorkbookType } from '@billdestein/joy-common'
 
-interface WorkbookRow {
+type RowData = {
     name: string
     lastModifiedISO: string
     lastModifiedAgo: string
+    _workbook: WorkbookType
+}
+
+type ContextMenu = {
+    x: number
+    y: number
+    workbook: WorkbookType
+} | null
+
+function getLastModified(wb: WorkbookType): number {
+    const times = [
+        ...wb.pics.map(p => p.createdAt),
+        ...wb.prompts.map(p => p.createdAt),
+    ]
+    return times.length > 0 ? Math.max(...times) : 0
 }
 
 function formatAgo(ts: number): string {
+    if (ts === 0) return 'N/A'
     const diff = Date.now() - ts
     const minutes = Math.floor(diff / 60000)
     const hours = Math.floor(diff / 3600000)
     const days = Math.floor(diff / 86400000)
-    if (days > 0) return `${days} day${days === 1 ? '' : 's'} ago`
-    if (hours > 0) return `${hours} hour${hours === 1 ? '' : 's'} ago`
-    return `${Math.max(0, minutes)} minute${minutes === 1 ? '' : 's'} ago`
+    if (days > 0) return `${days} day${days !== 1 ? 's' : ''} ago`
+    if (hours > 0) return `${hours} hour${hours !== 1 ? 's' : ''} ago`
+    return `${Math.max(0, minutes)} minute${minutes !== 1 ? 's' : ''} ago`
 }
 
-export default function WorkbookListApplet() {
-    const [rowData, setRowData] = useState<WorkbookRow[]>([])
-    const [contextMenu, setContextMenu] = useState<{ x: number; y: number; workbookName: string } | null>(null)
+function toRowData(wb: WorkbookType): RowData {
+    const ts = getLastModified(wb)
+    return {
+        name: wb.workbookName,
+        lastModifiedISO: ts ? new Date(ts).toISOString() : 'N/A',
+        lastModifiedAgo: formatAgo(ts),
+        _workbook: wb,
+    }
+}
 
-    const colDefs: ColDef<WorkbookRow>[] = [
-        { field: 'name', headerName: 'Name', sortable: true },
-        { field: 'lastModifiedISO', headerName: 'Last Modified', sortable: true },
-        { field: 'lastModifiedAgo', headerName: 'Modified Ago', sortable: false },
-    ]
+const COL_DEFS: ColDef<RowData>[] = [
+    { field: 'name', headerName: 'Name', sortable: true, flex: 1 },
+    { field: 'lastModifiedISO', headerName: 'Last Modified', sortable: true, width: 220 },
+    { field: 'lastModifiedAgo', headerName: 'Age', sortable: false, width: 140 },
+]
+
+export default function WorkbookListApplet() {
+    const [rows, setRows] = useState<RowData[]>([])
+    const [contextMenu, setContextMenu] = useState<ContextMenu>(null)
+    const containerRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         fetch('/v1/workbooks/list-workbooks', { credentials: 'include' })
             .then(r => r.json())
-            .then((data: { workbooks: WorkbookType[] }) => {
-                setRowData(
-                    data.workbooks.map(w => {
-                        const ts = w.lastModified ?? 0
-                        return {
-                            name: w.workbookName,
-                            lastModifiedISO: ts > 0 ? new Date(ts).toISOString() : '',
-                            lastModifiedAgo: ts > 0 ? formatAgo(ts) : '',
-                        }
-                    })
-                )
-            })
+            .then(data => setRows((data.workbooks as WorkbookType[]).map(toRowData)))
             .catch(console.error)
     }, [])
 
-    const onCellContextMenu = useCallback((event: CellContextMenuEvent<WorkbookRow>) => {
-        const e = event.event as MouseEvent
-        e.preventDefault()
-        setContextMenu({ x: e.clientX, y: e.clientY, workbookName: event.data?.name ?? '' })
+    const onCellContextMenu = useCallback((e: CellContextMenuEvent<RowData>) => {
+        const mouseEvent = e.event as MouseEvent
+        mouseEvent.preventDefault()
+        setContextMenu({
+            x: mouseEvent.clientX,
+            y: mouseEvent.clientY,
+            workbook: e.data!._workbook,
+        })
     }, [])
+
+    const closeMenu = useCallback(() => setContextMenu(null), [])
 
     useEffect(() => {
-        const dismiss = () => setContextMenu(null)
-        document.addEventListener('click', dismiss)
-        return () => document.removeEventListener('click', dismiss)
-    }, [])
+        if (!contextMenu) return
+        const handler = () => closeMenu()
+        document.addEventListener('mousedown', handler)
+        return () => document.removeEventListener('mousedown', handler)
+    }, [contextMenu, closeMenu])
 
     return (
-        <div style={{ height: '100%', width: '100%', position: 'relative' }} className="ag-theme-alpine-dark">
-            <AgGridReact
-                rowData={rowData}
-                columnDefs={colDefs}
-                onCellContextMenu={onCellContextMenu}
-                suppressContextMenu={true}
-            />
+        <div
+            ref={containerRef}
+            style={{ width: '100%', height: '100%', position: 'relative' }}
+            onClick={closeMenu}
+        >
+            <div className="ag-theme-alpine-dark" style={{ width: '100%', height: '100%' }}>
+                <AgGridReact<RowData>
+                    rowData={rows}
+                    columnDefs={COL_DEFS}
+                    onCellContextMenu={onCellContextMenu}
+                    preventDefaultOnContextMenu={true}
+                    rowSelection="single"
+                />
+            </div>
+
             {contextMenu && (
                 <div
-                    onClick={e => e.stopPropagation()}
                     style={{
                         position: 'fixed',
-                        top: contextMenu.y,
                         left: contextMenu.x,
-                        background: '#222',
-                        color: 'white',
-                        border: '1px solid #444',
+                        top: contextMenu.y,
+                        background: '#2a2a2a',
+                        border: '1px solid #555',
                         borderRadius: 4,
-                        zIndex: 10000,
+                        zIndex: 99999,
                         minWidth: 120,
                         boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
                         overflow: 'hidden',
                     }}
+                    onMouseDown={e => e.stopPropagation()}
                 >
-                    <div
-                        style={{ padding: '8px 16px', cursor: 'pointer' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = '#333')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                        onClick={() => { console.log('open', contextMenu.workbookName); setContextMenu(null) }}
-                    >
-                        Open
-                    </div>
-                    <div
-                        style={{ padding: '8px 16px', cursor: 'pointer' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = '#333')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                        onClick={() => { console.log('delete', contextMenu.workbookName); setContextMenu(null) }}
-                    >
-                        Delete
-                    </div>
+                    <ContextMenuItem label="Open" onClick={() => { console.log('open', contextMenu.workbook.workbookName); closeMenu() }} />
+                    <ContextMenuItem label="Delete" onClick={() => { console.log('delete', contextMenu.workbook.workbookName); closeMenu() }} />
                 </div>
             )}
+        </div>
+    )
+}
+
+function ContextMenuItem({ label, onClick }: { label: string; onClick: () => void }) {
+    const [hovered, setHovered] = useState(false)
+    return (
+        <div
+            onClick={onClick}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            style={{
+                padding: '8px 16px',
+                cursor: 'pointer',
+                color: '#ccc',
+                fontSize: 13,
+                background: hovered ? '#3a3a5a' : 'transparent',
+            }}
+        >
+            {label}
         </div>
     )
 }

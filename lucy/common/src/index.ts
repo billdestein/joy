@@ -20,5 +20,4 @@ export type WorkbookType = {
     workbookName: string
     pics: PicType[]
     prompts: PromptType[]
-    lastModified?: number
 }

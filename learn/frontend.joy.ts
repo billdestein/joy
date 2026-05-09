@@ -33,6 +33,9 @@ vertical space is the canvas.
 One button in the button row is has label "Workbooks".  When clicked, it adds a 
 WorkbookListApplet to the canvas.
 
+
+
+
 The OIDC scope must be 'openid email' — do not include 'profile', as Cognito does not enable
 it by default and it will cause an invalid_scope error.
 
@@ -45,7 +48,3 @@ The Cognito app client must have http://localhost:5173 registered as an allowed 
 for local development.
 
 `
-
-// Once logged in, frontend shows an all blue window with the word "Welcome Bill" centered in the window
-// in color white.
-

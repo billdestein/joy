@@ -1,17 +1,39 @@
-import React from 'react'
+import type { ReactNode, JSX, RefObject } from 'react'
 
-export interface ButtonConfig {
-    icon: React.ReactNode
+export type Button = {
+    icon: JSX.Element
+    key: string
     onClick: () => void
-    tooltip: string
+    tip: string
 }
 
-export interface FrameConfig {
+export type FrameConfig = {
+    children: ReactNode
     height: number
     width: number
     x: number
     y: number
-    message?: object
+    zIndex?: number
+    message?: unknown
     isModal?: boolean
-    buttons?: ButtonConfig[]
+    buttons?: Button[]
+}
+
+export type FrameEntry = {
+    frameId: number
+    children: ReactNode
+    height: number
+    width: number
+    x: number
+    y: number
+    zIndex: number
+    clickCatcherZ?: number
+    message?: unknown
+    isModal?: boolean
+    buttons?: Button[]
+}
+
+export type FrameProps = FrameEntry & {
+    canvasRef: RefObject<HTMLDivElement>
+    onBringToFront: () => number
 }

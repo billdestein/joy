@@ -1,11 +1,10 @@
 #!/bin/bash
 set -e
 
-MODE=${1:-local}
-if [ "$MODE" = "prod" ]; then
-    CONFIG_FILE=~/lucy-config/BackendProdConfig.json
-else
-    CONFIG_FILE=~/lucy-config/BackendLocalConfig.json
+CONFIG_FILE="$HOME/lucy-config/BackendLocalConfig.json"
+
+if [ "$NODE_ENV" = "production" ]; then
+  CONFIG_FILE="$HOME/lucy-config/BackendProdConfig.json"
 fi
 
 export COGNITO_REGION=$(jq -r '.COGNITO_REGION' "$CONFIG_FILE")
@@ -16,4 +15,4 @@ export ORIGIN=$(jq -r '.ORIGIN' "$CONFIG_FILE")
 export REDIS_HOST=$(jq -r '.REDIS_HOST' "$CONFIG_FILE")
 export REDIS_PORT=$(jq -r '.REDIS_PORT' "$CONFIG_FILE")
 
-npm run dev
+npx ts-node src/index.ts

@@ -10,10 +10,10 @@ usually a large div, that we call the canvas.  Within the canvas, we can have mu
 A frame is a div that can be dragged and resized through mouse gestures.  When there are two 
 or more frames on the canvas, the frams can be stacked and restacked (using z-index).
 
-Inside the react-better-frames system is a singleton called Canvas.  Canvas coordinates the 
-frames within it.  Canvas has functions to add and remove frames.  
+Inside the frames library is a singleton called Canvas.  Canvas coordinates the 
+frames within it.  Canvas has functions addFrame and removeFrame.  
 
-Inside the react-better-frames system is a React component called Frame.  
+Also inside the react-better-frames system is a React component called Frame.  
 The Frame is a JSX parent and has children.  Those children form what is called an 'applet'.
 
 The Frame has this layout:
@@ -34,28 +34,46 @@ the outer frame edge.  onMouseDown uses the same geometry to decide whether to s
 resize (near an edge) or a drag (in the header area but not near an edge).  The header
 area is defined as the top (border + header height) pixels of the frame.
 
-The frame header contains zero or more right-aligned buttons.  Each button has a configurable 
-svg icon, handler function, and tool tip label.  When the cursor hovers over a button,
-the background color of the button changes to something different but complementary.
-The tool tip is immediately visible on mouse over.  The tool tips are absolutely
-positioned, appear above their corresponding button, and can extend beyond the frame
-boundary.
+The frame header contains zero or more right-aligned buttons.  
+
+A button looks like this in the code:
+
+type Button = {
+  icon: React.JSX.Element
+  key: string
+  onClick: () => void
+  tip: string
+}
+
+When the cursor hovers over a button, the background color of the button changes 
+to something different but complementary.  The tool tip is immediately visible on 
+mouse over.  The tool tips are absolutely positioned, appear above their corresponding 
+button, and can extend beyond the frame boundary.
 
 The Frame has these props:
 
-- initial height in pixels
-- initial width in pixels
-- initial x coordinate in pixels (relative to the top left corner of the canvas)
-- initial y coordinate in pixels (relative to the top left corner of the canvas)
-- initial z-index.  Z index values are unique and monotonically increasing.
-- a 'message' which is an opaque object passed from a parent frame to a child frame.
-- isModal is a boolean that defaults to false.  
-- id is the Canvas's unique id for the frame.  It is passed to the canvas when removing a frame. 
+- height: the initial height in pixels
+- width: the initial width in pixels
+- x: the initial x coordinate in pixels (relative to the top left corner of the canvas)
+- y: the initial y coordinate in pixels (relative to the top left corner of the canvas)
+- z-index: the initial z-index.  Z index values are unique and monotonically increasing.
+- message: an opaque object passed from a parent frame to a child frame.
+- isModal: a boolean that defaults to false.  Modal frames are explained below.
+- frameId: an integer that uniquely identifies the frame.  The frameId is explained below
 - An array of button objects.
 
-When the Canvas adds a new modal frame, it first adds inserts a div into the dom that we call the click catcher div.  The click catcher is translucent and covers the entire canvas.  Then the Canvas adds the modal frame centered in the canvas both horizontally and vertically.  The x and y props are ignored.
+The frameId is a monotonically increasing integer computed in the Canvas' addFrame function.
+When it's time to remove the frame from the canvas, the frameId is passed to the canvas.removeFrame f
+unction.
 
-All dragging, resizing and restacking is done through direct DOM manipulation.  We don't want mouse gestures on one Frame to cause React to rerender other frames.  Each frame keeps track if its own x, y, height, width and z-index.
+Modal frames are different from regular frames.  When the Canvas adds a new modal frame, it first adds 
+a div into the DOM that we call the click catcher div.  The click catcher is translucent and covers the 
+entire canvas.  The click catcher has a z-index one greater than the nearest frame.  Then the Canvas adds 
+the modal frame centered in the canvas both horizontally and vertically.  The x and y props are ignored.  
+The canvas.removeFrame removes both the modal frame and the click catcher.
+
+All dragging, resizing and restacking is done through direct DOM manipulation.  We don't want mouse gestures on 
+one Frame to cause React to rerender other frames.  Each frame keeps track if its own x, y, height, width and z-index.
 
 The frame can only be moved up to the point where the top of the frame touches the top of the canvas.
 

@@ -105,9 +105,10 @@ Endpoint: /v1/workbooks/generate-pic (POST)
   - Input:
     - workbook
   - Processing:
+    - Use gemini-2.0-flash-preview-image-generation
     - Call Gemini passing the focused prompt
-      - Put the resulting image in a file named 'unnamed'
-      - Add a pic to the workbook
+    - Put the resulting image in a file named 'unnamed'
+    - Add a pic to the workbook
   - Output
     - workbook
     - encoded image

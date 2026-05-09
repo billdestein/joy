@@ -8,9 +8,12 @@ const users = new Map<string, User>()
 export function findOrCreateUser(email: string): User {
     let user = users.get(email)
     if (!user) {
-        const slug = email.toLowerCase().replace(/[^a-z0-9]/g, '-')
-        user = { email, slug }
+        user = { email, slug: emailToSlug(email) }
         users.set(email, user)
     }
     return user
+}
+
+function emailToSlug(email: string): string {
+    return email.toLowerCase().replace(/[^a-z0-9]/g, '-')
 }

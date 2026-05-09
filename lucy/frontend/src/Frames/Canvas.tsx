@@ -1,83 +1,78 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { Frame, FrameProps } from './Frame'
-import { FrameConfig } from './types'
+import { useState, useRef, useEffect, useCallback, type RefObject } from 'react'
+import type { FrameConfig, FrameEntry } from './types'
+import Frame from './Frame'
 
-interface FrameEntry {
-    id: string
-    props: Omit<FrameProps, 'canvasRef' | 'onBringToFront'>
-    children: React.ReactNode
-}
+type SetFrames = React.Dispatch<React.SetStateAction<FrameEntry[]>>
 
-let _addFrame:    ((entry: FrameEntry) => void) | null = null
-let _removeFrame: ((id: string) => void) | null = null
-let _bringToFront:((id: string) => void) | null = null
-let _canvasEl:    HTMLDivElement | null = null
-let _nextId      = 1
-let _nextZIndex  = 1
+let _setFrames: SetFrames | null = null
+let _nextFrameId = 1
+let _nextZIndex = 100
 
-export const Canvas = {
-    add(config: FrameConfig, children: React.ReactNode): string {
-        const id = String(_nextId++)
-        let { x, y } = config
-
-        if (config.isModal && _canvasEl) {
-            const rect = _canvasEl.getBoundingClientRect()
-            x = Math.max(0, (rect.width  - config.width)  / 2)
-            y = Math.max(0, (rect.height - config.height) / 2)
+export const canvas = {
+    addFrame(config: FrameConfig): number {
+        const frameId = _nextFrameId++
+        let entry: FrameEntry
+        if (config.isModal) {
+            // Reserve two slots: click catcher gets z-index one greater than the
+            // nearest (topmost) existing frame; modal sits one above that.
+            const clickCatcherZ = _nextZIndex++
+            const zIndex = _nextZIndex++
+            entry = { ...config, frameId, zIndex, clickCatcherZ }
+        } else {
+            const zIndex = config.zIndex ?? _nextZIndex++
+            entry = { ...config, frameId, zIndex }
         }
-
-        _addFrame?.({ id, props: { ...config, id, x, y, zIndex: _nextZIndex++ }, children })
-        return id
+        _setFrames?.(prev => [...prev, entry])
+        return frameId
     },
 
-    remove(id: string): void {
-        _removeFrame?.(id)
+    removeFrame(frameId: number) {
+        _setFrames?.(prev => prev.filter(f => f.frameId !== frameId))
     },
 }
 
-export function CanvasComponent() {
+export function CanvasHost() {
     const [frames, setFrames] = useState<FrameEntry[]>([])
-    const canvasRef = useRef<HTMLDivElement>(null)
+    const containerRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        _canvasEl = canvasRef.current
-
-        _addFrame     = entry => setFrames(prev => [...prev, entry])
-        _removeFrame  = id    => setFrames(prev => prev.filter(f => f.id !== id))
-        _bringToFront = id    => setFrames(prev => {
-            const newZ = ++_nextZIndex
-            return prev.map(f => f.id === id ? { ...f, props: { ...f.props, zIndex: newZ } } : f)
-        })
-
-        return () => {
-            _addFrame = null; _removeFrame = null; _bringToFront = null; _canvasEl = null
-        }
+        _setFrames = setFrames
+        return () => { _setFrames = null }
     }, [])
 
-    const hasModal = frames.some(f => f.props.isModal)
+    const onBringToFront = useCallback(() => _nextZIndex++, [])
+
+    const regular = frames.filter(f => !f.isModal)
+    const modals = frames.filter(f => f.isModal)
 
     return (
         <div
-            ref={canvasRef}
-            style={{ position: 'relative', flex: 1, overflow: 'hidden', background: '#000' }}
+            ref={containerRef}
+            style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}
         >
-            {hasModal && (
+            {regular.map(entry => (
+                <Frame
+                    key={entry.frameId}
+                    {...entry}
+                    canvasRef={containerRef as RefObject<HTMLDivElement>}
+                    onBringToFront={onBringToFront}
+                />
+            ))}
+            {modals.length > 0 && (
                 <div style={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'rgba(0,0,0,0.5)',
-                    zIndex: _nextZIndex - 1,
+                    background: 'rgba(0,0,0,0.45)',
+                    zIndex: modals[0].clickCatcherZ,
                 }} />
             )}
-            {frames.map(frame => (
+            {modals.map(entry => (
                 <Frame
-                    key={frame.id}
-                    {...frame.props}
-                    canvasRef={canvasRef}
-                    onBringToFront={id => _bringToFront?.(id)}
-                >
-                    {frame.children}
-                </Frame>
+                    key={entry.frameId}
+                    {...entry}
+                    canvasRef={containerRef as RefObject<HTMLDivElement>}
+                    onBringToFront={onBringToFront}
+                />
             ))}
         </div>
     )

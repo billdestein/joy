@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import { getEmailFromSession } from './session'
 import { findOrCreateUser } from './user'
 
-export async function authMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function requireAuth(req: Request, res: Response, next: NextFunction) {
     const sessionId = req.cookies?.sessionId
     if (!sessionId) {
         res.status(401).json({ error: 'Unauthorized' })
@@ -10,7 +10,7 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
     }
     const email = await getEmailFromSession(sessionId)
     if (!email) {
-        res.status(401).json({ error: 'Unauthorized' })
+        res.status(401).json({ error: 'Session expired' })
         return
     }
     res.locals.user = findOrCreateUser(email)

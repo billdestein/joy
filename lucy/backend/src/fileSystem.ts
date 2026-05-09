@@ -1,56 +1,50 @@
 import fs from 'fs'
 import path from 'path'
-import { WorkbookType, PicType } from '@billdestein/joy-common'
+import { WorkbookType } from '@billdestein/joy-common'
 
-function workbookDir(mountDir: string, slug: string, workbookName: string): string {
-    return path.join(mountDir, 'users', slug, workbookName)
+function workbookDir(slug: string, workbookName: string): string {
+    return path.join(process.env.MOUNT_DIR!, 'users', slug, workbookName)
 }
 
-function workbookFilePath(mountDir: string, slug: string, workbookName: string): string {
-    return path.join(workbookDir(mountDir, slug, workbookName), 'workbook.json')
+function workbookFile(slug: string, workbookName: string): string {
+    return path.join(workbookDir(slug, workbookName), 'workbook.json')
 }
 
-export function readWorkbook(mountDir: string, slug: string, workbookName: string): WorkbookType {
-    const data = fs.readFileSync(workbookFilePath(mountDir, slug, workbookName), 'utf-8')
-    return JSON.parse(data) as WorkbookType
+export function readWorkbook(slug: string, workbookName: string): WorkbookType {
+    const raw = fs.readFileSync(workbookFile(slug, workbookName), 'utf-8')
+    return JSON.parse(raw)
 }
 
-export function writeWorkbook(mountDir: string, slug: string, workbook: WorkbookType): void {
-    fs.writeFileSync(workbookFilePath(mountDir, slug, workbook.workbookName), JSON.stringify(workbook, null, 2))
-}
-
-export function createWorkbook(mountDir: string, slug: string, workbookName: string): void {
-    const dir = workbookDir(mountDir, slug, workbookName)
+export function writeWorkbook(slug: string, workbook: WorkbookType) {
+    const dir = workbookDir(slug, workbook.workbookName)
     fs.mkdirSync(dir, { recursive: true })
-    const workbook: WorkbookType = { workbookName, pics: [], prompts: [] }
-    fs.writeFileSync(workbookFilePath(mountDir, slug, workbookName), JSON.stringify(workbook, null, 2))
+    fs.writeFileSync(workbookFile(slug, workbook.workbookName), JSON.stringify(workbook, null, 2))
 }
 
-export function deleteWorkbook(mountDir: string, slug: string, workbookName: string): void {
-    const dir = workbookDir(mountDir, slug, workbookName)
+export function listWorkbooks(slug: string): WorkbookType[] {
+    const userDir = path.join(process.env.MOUNT_DIR!, 'users', slug)
+    if (!fs.existsSync(userDir)) return []
+    return fs.readdirSync(userDir)
+        .filter(name => fs.existsSync(path.join(userDir, name, 'workbook.json')))
+        .map(name => readWorkbook(slug, name))
+}
+
+export function deleteWorkbook(slug: string, workbookName: string) {
+    const dir = workbookDir(slug, workbookName)
     fs.rmSync(dir, { recursive: true, force: true })
 }
 
-export function listWorkbooks(mountDir: string, slug: string): WorkbookType[] {
-    const userDir = path.join(mountDir, 'users', slug)
-    if (!fs.existsSync(userDir)) return []
-    const entries = fs.readdirSync(userDir, { withFileTypes: true })
-    const workbooks: WorkbookType[] = []
-    for (const entry of entries) {
-        if (!entry.isDirectory()) continue
-        try {
-            const wbFilePath = path.join(userDir, entry.name, 'workbook.json')
-            const stat = fs.statSync(wbFilePath)
-            const wb = JSON.parse(fs.readFileSync(wbFilePath, 'utf-8')) as WorkbookType
-            wb.lastModified = stat.mtimeMs
-            workbooks.push(wb)
-        } catch {
-            // skip malformed workbook dirs
-        }
-    }
-    return workbooks
+export function deletePicFile(slug: string, workbookName: string, filename: string) {
+    const filePath = path.join(workbookDir(slug, workbookName), filename)
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath)
 }
 
-export function picPath(mountDir: string, slug: string, workbookName: string, filename: string): string {
-    return path.join(workbookDir(mountDir, slug, workbookName), filename)
+export function renamePicFile(slug: string, workbookName: string, oldName: string, newName: string) {
+    const dir = workbookDir(slug, workbookName)
+    fs.renameSync(path.join(dir, oldName), path.join(dir, newName))
+}
+
+export function writePicFile(slug: string, workbookName: string, filename: string, data: Buffer) {
+    const filePath = path.join(workbookDir(slug, workbookName), filename)
+    fs.writeFileSync(filePath, data)
 }

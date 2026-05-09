@@ -1,108 +1,121 @@
-import { Router } from 'express'
-import fs from 'fs'
-import { GoogleGenAI } from '@google/genai'
-import { WorkbookType, PicType } from '@billdestein/joy-common'
-import { authMiddleware } from '../middleware'
-import { createWorkbook, deleteWorkbook, listWorkbooks, readWorkbook, writeWorkbook, picPath } from '../fileSystem'
+import { Router, Request, Response } from 'express'
+import { GoogleGenAI, Modality } from '@google/genai'
+import { PicType, WorkbookType } from '@billdestein/joy-common'
 import { User } from '../user'
+import {
+    readWorkbook,
+    writeWorkbook,
+    listWorkbooks,
+    deleteWorkbook,
+    deletePicFile,
+    renamePicFile,
+    writePicFile,
+} from '../fileSystem'
 
 const router = Router()
-router.use(authMiddleware)
 
-function mountDir(): string {
-    return process.env.MOUNT_DIR!
+function getUser(res: Response): User {
+    return res.locals.user as User
 }
 
-router.post('/create-workbook', async (req, res) => {
-    const user: User = res.locals.user
+router.post('/create-workbook', (req: Request, res: Response) => {
     const { workbookName } = req.body
-    createWorkbook(mountDir(), user.slug, workbookName)
-    res.json({})
+    const user = getUser(res)
+    const workbook: WorkbookType = { workbookName, pics: [], prompts: [] }
+    writeWorkbook(user.slug, workbook)
+    res.status(200).end()
 })
 
-router.post('/delete-pic', async (req, res) => {
-    const user: User = res.locals.user
+router.post('/delete-pic', (req: Request, res: Response) => {
     const { workbook, picName }: { workbook: WorkbookType; picName: string } = req.body
-    const wb = readWorkbook(mountDir(), user.slug, workbook.workbookName)
-    wb.pics = wb.pics.filter(p => p.filename !== picName)
-    writeWorkbook(mountDir(), user.slug, wb)
-    const imgPath = picPath(mountDir(), user.slug, workbook.workbookName, picName)
-    if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath)
-    res.json({})
+    const user = getUser(res)
+    deletePicFile(user.slug, workbook.workbookName, picName)
+    const updated: WorkbookType = {
+        ...workbook,
+        pics: workbook.pics.filter(p => p.filename !== picName),
+    }
+    writeWorkbook(user.slug, updated)
+    res.status(200).end()
 })
 
-router.post('/delete-workbook', async (req, res) => {
-    const user: User = res.locals.user
+router.post('/delete-workbook', (req: Request, res: Response) => {
     const { workbookName } = req.body
-    deleteWorkbook(mountDir(), user.slug, workbookName)
-    res.json({})
+    const user = getUser(res)
+    deleteWorkbook(user.slug, workbookName)
+    res.status(200).end()
 })
 
-router.post('/generate-pic', async (req, res) => {
-    const user: User = res.locals.user
+router.post('/generate-pic', async (req: Request, res: Response) => {
     const { workbook }: { workbook: WorkbookType } = req.body
-
-    const focusedPrompt = workbook.prompts.find(p => p.focused)?.text
+    const user = getUser(res)
+    const focusedPrompt = workbook.prompts.find(p => p.focused)
     if (!focusedPrompt) {
         res.status(400).json({ error: 'No focused prompt' })
         return
     }
-
-    const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY! })
-    const response = await ai.models.generateImages({
-        model: 'imagen-3.0-generate-002',
-        prompt: focusedPrompt,
-        config: { numberOfImages: 1, outputMimeType: 'image/jpeg' },
-    })
-
-    const imageBytes = response.generatedImages?.[0]?.image?.imageBytes
-    if (!imageBytes) {
-        res.status(500).json({ error: 'No image generated' })
-        return
+    try {
+        const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY! })
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.0-flash-preview-image-generation',
+            contents: focusedPrompt.text,
+            config: { responseModalities: [Modality.IMAGE, Modality.TEXT] },
+        })
+        const imagePart = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData)
+        if (!imagePart?.inlineData) {
+            res.status(500).json({ error: 'No image returned from Gemini' })
+            return
+        }
+        const { data, mimeType } = imagePart.inlineData
+        const ext = mimeType === 'image/png' ? 'png' : 'jpg'
+        const filename = 'unnamed.' + ext
+        const imageBuffer = Buffer.from(data!, 'base64')
+        writePicFile(user.slug, workbook.workbookName, filename, imageBuffer)
+        const pic: PicType = {
+            createdAt: Date.now(),
+            filename,
+            mimeType: mimeType!,
+        }
+        const updated: WorkbookType = { ...workbook, pics: [...workbook.pics, pic] }
+        writeWorkbook(user.slug, updated)
+        res.json({ workbook: updated, image: data })
+    } catch (err) {
+        console.error('generate-pic error:', err)
+        res.status(500).json({ error: 'Image generation failed' })
     }
-
-    const wb = readWorkbook(mountDir(), user.slug, workbook.workbookName)
-    const imgFilePath = picPath(mountDir(), user.slug, workbook.workbookName, 'unnamed')
-    fs.writeFileSync(imgFilePath, Buffer.from(imageBytes, 'base64'))
-
-    const pic: PicType = { createdAt: Date.now(), filename: 'unnamed', mimeType: 'image/jpeg' }
-    wb.pics.push(pic)
-    writeWorkbook(mountDir(), user.slug, wb)
-
-    res.json({ workbook: wb, encodedImage: imageBytes })
 })
 
-router.get('/get-workbook', async (req, res) => {
-    const user: User = res.locals.user
-    const { workbookName } = req.query as { workbookName: string }
-    const wb = readWorkbook(mountDir(), user.slug, workbookName)
-    res.json(wb)
+router.get('/get-workbook', (req: Request, res: Response) => {
+    const workbookName = req.query.workbookName as string
+    const user = getUser(res)
+    const workbook = readWorkbook(user.slug, workbookName)
+    res.json(workbook)
 })
 
-router.get('/list-workbooks', async (req, res) => {
-    const user: User = res.locals.user
-    const workbooks = listWorkbooks(mountDir(), user.slug)
+router.get('/list-workbooks', (req: Request, res: Response) => {
+    const user = getUser(res)
+    const workbooks = listWorkbooks(user.slug)
     res.json({ workbooks })
 })
 
-router.post('/rename-pic', async (req, res) => {
-    const user: User = res.locals.user
+router.post('/rename-pic', (req: Request, res: Response) => {
     const { workbook, newPicName }: { workbook: WorkbookType; newPicName: string } = req.body
-
-    const wb = readWorkbook(mountDir(), user.slug, workbook.workbookName)
-    const pic = wb.pics.find(p => p.filename === 'unnamed')
-    if (!pic) {
-        res.status(404).json({ error: 'No unnamed pic found' })
+    const user = getUser(res)
+    const unnamedPic = workbook.pics.find(p => p.filename.startsWith('unnamed'))
+    if (!unnamedPic) {
+        res.status(400).json({ error: 'No unnamed pic found' })
         return
     }
-
-    const oldPath = picPath(mountDir(), user.slug, workbook.workbookName, 'unnamed')
-    const newPath = picPath(mountDir(), user.slug, workbook.workbookName, newPicName)
-    fs.renameSync(oldPath, newPath)
-    pic.filename = newPicName
-    writeWorkbook(mountDir(), user.slug, wb)
-
-    res.json({})
+    const ext = unnamedPic.filename.includes('.') ? '.' + unnamedPic.filename.split('.').pop() : ''
+    const newFilename = newPicName + ext
+    renamePicFile(user.slug, workbook.workbookName, unnamedPic.filename, newFilename)
+    const updated: WorkbookType = {
+        ...workbook,
+        pics: workbook.pics.map(p =>
+            p.filename === unnamedPic.filename ? { ...p, filename: newFilename } : p
+        ),
+    }
+    writeWorkbook(user.slug, updated)
+    res.status(200).end()
 })
 
 export default router

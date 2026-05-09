@@ -1,21 +1,22 @@
 import { createClient } from 'redis'
-import crypto from 'crypto'
 
-let client: ReturnType<typeof createClient>
+let redisClient: ReturnType<typeof createClient>
 
-export async function initRedis(host: string, port: number): Promise<void> {
-    client = createClient({ socket: { host, port } })
-    await client.connect()
+export async function initRedis() {
+    redisClient = createClient({
+        socket: {
+            host: process.env.REDIS_HOST,
+            port: Number(process.env.REDIS_PORT),
+        }
+    })
+    redisClient.on('error', (err) => console.error('Redis error:', err))
+    await redisClient.connect()
 }
 
-export function generateSessionId(): string {
-    return crypto.randomBytes(32).toString('hex')
-}
-
-export async function setSession(sessionId: string, email: string): Promise<void> {
-    await client.set(sessionId, email, { EX: 3600 })
+export async function setSession(sessionId: string, email: string) {
+    await redisClient.set(sessionId, email, { EX: 3600 })
 }
 
 export async function getEmailFromSession(sessionId: string): Promise<string | null> {
-    return client.get(sessionId)
+    return redisClient.get(sessionId)
 }
