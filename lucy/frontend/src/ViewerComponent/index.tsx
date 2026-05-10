@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { canvas } from '../Frames'
+import { ButtonIcons } from '../ButtonIcons'
+import { ZoomApplet } from '../ZoomApplet'
 
 interface Props {
     encodedImage: string
@@ -9,12 +12,6 @@ interface ContextMenuState {
     x: number
     y: number
 }
-
-const menuItems = [
-    { label: 'Zoom', action: () => alert('zoom') },
-    { label: 'Save', action: () => alert('save') },
-    { label: 'Download', action: () => alert('download') },
-]
 
 export function ViewerComponent({ encodedImage, mimeType }: Props) {
     const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
@@ -27,6 +24,26 @@ export function ViewerComponent({ encodedImage, mimeType }: Props) {
     function dismiss() {
         setContextMenu(null)
     }
+
+    function handleZoom() {
+        canvas.addFrame({
+            width: 800,
+            height: 700,
+            renderChild: () => <ZoomApplet encodedImage={encodedImage} mimeType={mimeType} />,
+            getButtons: (onClose) => [{
+                icon: ButtonIcons.close,
+                toolTipLabel: 'Close',
+                handler: onClose,
+            }],
+        })
+        dismiss()
+    }
+
+    const menuItems = [
+        { label: 'Zoom', action: handleZoom },
+        { label: 'Save', action: () => alert('save') },
+        { label: 'Download', action: () => alert('download') },
+    ]
 
     if (!encodedImage) {
         return <div style={{ width: '100%', height: '100%', background: '#000' }} />
@@ -61,7 +78,7 @@ export function ViewerComponent({ encodedImage, mimeType }: Props) {
                     {menuItems.map((item) => (
                         <div
                             key={item.label}
-                            onClick={(e) => { e.stopPropagation(); item.action(); dismiss() }}
+                            onClick={(e) => { e.stopPropagation(); item.action() }}
                             style={{ padding: '7px 14px', cursor: 'pointer', color: '#cce0ff', fontSize: 13 }}
                             onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = '#2a4060' }}
                             onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}

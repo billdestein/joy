@@ -22,7 +22,7 @@ either the horizontal or vertical direction.
 
 The image has a context menu with these options:
 
-- zoom: does alert('zoom')
+- zoom: adds a ZoomApplet to the canvas.  The encoded image and mime type are passed as props.  
 
 - save: does alert('save')
 

@@ -8,7 +8,7 @@ child in a Frame component.
 
 The WorkbookApplet is implemented in the file lucy/frontend/src/WorkbookApplet.
 
-The surrounding frame has these three FrameHeaderButtonComponents:
+The surrounding frame has a single FrameHeaderButtonComponents:
 
 {
     icon: ButtonIcons.close

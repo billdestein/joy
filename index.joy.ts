@@ -18,6 +18,7 @@ import { ViewerComponent } from './learn/ViewerComponent.joy.ts'
 import { WorkbookListApplet } from './learn/WorkbookListApplet.joy.ts'
 import { WorkbookApplet } from './learn/WorkbookApplet.joy.ts'
 // import { framesTest } from './learn/frames-test.joy.ts'
+import { ZoomApplet } from './learn/ZoomApplet.joy.ts'
 import { frontend } from './learn/frontend.joy.ts'
 
 
@@ -56,6 +57,8 @@ learn(GetWorkbookNameApplet)
 learn(PicListComponent)
 
 learn(UploadWorkbookApplet)
+
+learn(ZoomApplet)
 
 learn(ViewerComponent)
 
