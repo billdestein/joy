@@ -45,7 +45,7 @@ export function Canvas() {
                         {clickCatcherZIndex != null && (
                             <div style={{ position: 'absolute', inset: 0, zIndex: clickCatcherZIndex, background: 'rgba(0,0,0,0.4)', pointerEvents: 'all' }} />
                         )}
-                        <Frame frameId={frameId} width={config.width} height={config.height} x={config.x ?? 100} y={config.y ?? 100} zIndex={zIndex} isModal={config.isModal ?? false} buttons={buttons}>
+                        <Frame frameId={frameId} width={config.width} height={config.height} x={config.x ?? 100} y={config.y ?? 100} zIndex={zIndex} isModal={config.isModal ?? false} title={config.title ?? ''} buttons={buttons}>
                             {config.renderChild(onClose)}
                         </Frame>
                     </React.Fragment>

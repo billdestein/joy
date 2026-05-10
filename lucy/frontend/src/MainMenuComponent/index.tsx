@@ -11,6 +11,7 @@ export function MainMenuComponent() {
         canvas.addFrame({
             width: 640,
             height: 440,
+            title: 'Workbooks',
             renderChild: () => <WorkbookListApplet refreshRef={refreshRef} />,
             getButtons: (onClose) => [
                 {

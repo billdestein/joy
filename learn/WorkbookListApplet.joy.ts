@@ -49,7 +49,7 @@ The open callback function calls canvas.addFrame to add the WorkbookApplet.
 The selected workbook name is passed as a prop to the WorkbookApplet.
 
 
-The surrounding frame has these three FrameHeaderButtonComponents:  
+The surrounding frame has these three FrameHeaderButtonComponents right-aligned in the header:  
 
 {
     icon: ButtonIcons.plus
@@ -69,6 +69,8 @@ The surrounding frame has these three FrameHeaderButtonComponents:
     Handler: Call Canvas.removeFrame
 }
 
+The surrounding frame has the string 'Workbooks' left-aligned in the header.
+
 The addNotebookNandler function creates an instance of the GetWorkbookNameApplet.  The
 GetWorkbookNameApplet calls it's callback function with a name for the new workbook.
 The callback function then makes an API call to the backend's create-workbook endpoint.
@@ -77,6 +79,5 @@ The callback function then makes an API call to the backend's create-workbook en
 The uploaWorkbook function creates an instance of the UploadWorkbookApplet.  The 
 UploadWorkbookApplet calls its callback function when complete.  The callback
 function refreshes the grid.
-
 
 `

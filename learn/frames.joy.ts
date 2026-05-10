@@ -34,7 +34,9 @@ the outer frame edge.  onMouseDown uses the same geometry to decide whether to s
 resize (near an edge) or a drag (in the header area but not near an edge).  The header
 area is defined as the top (border + header height) pixels of the frame.
 
-The frame header contains zero or more right-aligned FrameHeaderButtonComponents.  
+The frame header contains zero or more right-aligned FrameHeaderButtonComponents.
+
+The frame header has a left-aligned 'title' that defaults to the empty string.
 
 The Frame has these props:
 
@@ -49,8 +51,8 @@ The Frame has these props:
 - An array of button objects.
 
 The frameId is a monotonically increasing integer computed in the Canvas' addFrame function.
-When it's time to remove the frame from the canvas, the frameId is passed to the canvas.removeFrame f
-unction.
+When it's time to remove the frame from the canvas, the frameId is passed to the canvas.removeFrame 
+function.
 
 Modal frames are different from regular frames.  When the Canvas adds a new modal frame, it first adds 
 a div into the DOM that we call the click catcher div.  The click catcher is translucent and covers the 

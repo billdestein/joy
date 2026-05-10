@@ -17,6 +17,7 @@ interface FrameProps {
     y: number
     zIndex: number
     isModal: boolean
+    title: string
     buttons: ButtonConfig[]
     children: React.ReactNode
 }
@@ -37,7 +38,7 @@ function getResizeDir(x: number, y: number, w: number, h: number): ResizeDir {
     return dir as ResizeDir
 }
 
-export function Frame({ frameId: _frameId, width, height, x, y, zIndex, isModal, buttons, children }: FrameProps) {
+export function Frame({ frameId: _frameId, width, height, x, y, zIndex, isModal, title, buttons, children }: FrameProps) {
     const divRef = useRef<HTMLDivElement>(null)
     const dragState = useRef<{
         type: 'drag' | 'resize'
@@ -144,7 +145,9 @@ export function Frame({ frameId: _frameId, width, height, x, y, zIndex, isModal,
             onMouseDown={handleMouseDown}
             style={{ position: 'absolute', border: `${BORDER}px solid #3a5070`, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', background: '#1e2a38', userSelect: 'none' }}
         >
-            <div style={{ height: HEADER_HEIGHT, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 4px', background: '#253545', gap: 2, cursor: 'inherit' }}>
+            <div style={{ height: HEADER_HEIGHT, flexShrink: 0, display: 'flex', alignItems: 'center', padding: '0 4px', background: '#253545', gap: 2, cursor: 'inherit' }}>
+                {title && <span style={{ flex: 1, color: '#cce0ff', fontSize: 13, paddingLeft: 4, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{title}</span>}
+                {!title && <div style={{ flex: 1 }} />}
                 {buttons.map((btn, i) => <FrameHeaderButtonComponent key={i} {...btn} />)}
             </div>
             <div style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>

@@ -12,6 +12,7 @@ export interface AddFrameConfig {
     x?: number
     y?: number
     isModal?: boolean
+    title?: string
     renderChild: (onClose: () => void) => React.ReactNode
     getButtons?: (onClose: () => void) => ButtonConfig[]
 }
