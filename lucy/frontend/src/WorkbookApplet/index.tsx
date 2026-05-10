@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { PicListComponent } from '../PicListComponent'
 import { ViewerComponent } from '../ViewerComponent'
 import { ComposerComponent } from '../ComposerComponent'
@@ -10,6 +10,13 @@ interface Props {
 export function WorkbookApplet({ workbookName }: Props) {
     const containerRef = useRef<HTMLDivElement>(null)
     const rightRef = useRef<HTMLDivElement>(null)
+    const [encodedImage, setEncodedImage] = useState('')
+    const [mimeType, setMimeType] = useState('image/png')
+
+    function onImageGenerated(img: string, mime: string) {
+        setEncodedImage(img)
+        setMimeType(mime)
+    }
 
     function startHorizDrag(e: React.MouseEvent) {
         e.preventDefault()
@@ -62,14 +69,14 @@ export function WorkbookApplet({ workbookName }: Props) {
             />
             <div ref={rightRef} data-pane="right" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 <div data-pane="top" style={{ height: '60%', overflow: 'hidden', flexShrink: 0 }}>
-                    <ViewerComponent />
+                    <ViewerComponent encodedImage={encodedImage} mimeType={mimeType} />
                 </div>
                 <div
                     onMouseDown={startVertDrag}
                     style={{ height: 5, cursor: 'row-resize', background: '#2a3a50', flexShrink: 0 }}
                 />
                 <div data-pane="bottom" style={{ flex: 1, overflow: 'hidden' }}>
-                    <ComposerComponent workbookName={workbookName} />
+                    <ComposerComponent workbookName={workbookName} onImageGenerated={onImageGenerated} />
                 </div>
             </div>
         </div>

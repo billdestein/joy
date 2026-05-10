@@ -5,9 +5,10 @@ import { ButtonIcons } from '../ButtonIcons'
 interface Props {
     getPrompt: () => string
     workbookName: string
+    onImageGenerated: (encodedImage: string, mimeType: string) => void
 }
 
-export function ComposerButtonRowComponent({ getPrompt, workbookName }: Props) {
+export function ComposerButtonRowComponent({ getPrompt, workbookName, onImageGenerated }: Props) {
     function previousPrompt() {
         alert('previousPrompt')
     }
@@ -31,12 +32,17 @@ export function ComposerButtonRowComponent({ getPrompt, workbookName }: Props) {
         updatedPrompts.push(newPrompt)
         workbook.prompts = updatedPrompts
 
-        await fetch('/v1/workbooks/generate-pic', {
+        const genRes = await fetch('/v1/workbooks/generate-pic', {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ workbook }),
         })
+        if (!genRes.ok) return
+
+        const genData = await genRes.json() as { workbook: WorkbookType; encodedImage: string }
+        const mimeType = genData.workbook.pics.find((p) => p.filename === 'unnamed')?.mimeType ?? 'image/png'
+        onImageGenerated(genData.encodedImage, mimeType)
     }
 
     return (

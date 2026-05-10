@@ -8,9 +8,10 @@ interface EditorHandle {
 
 interface Props {
     workbookName: string
+    onImageGenerated: (encodedImage: string, mimeType: string) => void
 }
 
-export function ComposerComponent({ workbookName }: Props) {
+export function ComposerComponent({ workbookName, onImageGenerated }: Props) {
     const editorRef = useRef<EditorHandle | null>(null)
 
     function getPrompt() {
@@ -22,7 +23,11 @@ export function ComposerComponent({ workbookName }: Props) {
             <div style={{ flex: 1, overflow: 'hidden' }}>
                 <ComposerEditorComponent editorRef={editorRef} />
             </div>
-            <ComposerButtonRowComponent getPrompt={getPrompt} workbookName={workbookName} />
+            <ComposerButtonRowComponent
+                getPrompt={getPrompt}
+                workbookName={workbookName}
+                onImageGenerated={onImageGenerated}
+            />
         </div>
     )
 }
