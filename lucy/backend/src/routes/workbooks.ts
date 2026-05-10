@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenAI } from '@google/genai'
 import { WorkbookType, PicType } from '@billdestein/joy-common'
 import { AuthenticatedRequest } from '../middleware'
 import {
@@ -122,17 +122,18 @@ router.post('/generate-pic', async (req: Request, res: Response): Promise<void> 
     }
 
     try {
-        const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!)
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-2.0-flash-preview-image-generation',
+        const genAI = new GoogleGenAI({
+            apiKey: process.env.GOOGLE_API_KEY!,
+            httpOptions: { apiVersion: 'v1alpha' },
         })
 
-        const result = await model.generateContent({
+        const result = await genAI.models.generateContent({
+            model: 'gemini-2.5-flash-image',
             contents: [{ role: 'user', parts: [{ text: focusedPrompt.text }] }],
-            generationConfig: { responseModalities: ['TEXT', 'IMAGE'] } as never,
+            config: { responseModalities: ['IMAGE', 'TEXT'] },
         })
 
-        const parts = result.response.candidates?.[0]?.content?.parts ?? []
+        const parts = result.candidates?.[0]?.content?.parts ?? []
         let imageBase64 = ''
         let mimeType = 'image/png'
 

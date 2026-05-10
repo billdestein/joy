@@ -27,7 +27,11 @@ The previousPrompt function simply does alert('previousPrompt')
 
 The nextPrompt function simply does alert('nextPrompt')
 
-The runPrompt function simply does alert('runPrompt')
+The runPrompt function gets the text from the MonacoEditor within the corresponding
+ComposerEditorComponent.  It then creates a PromptType object and pushes that object
+onto the workbook's array of prompts.  It marks the rightmost prompt as focused,
+and all other prompts as not focused.  It makes an API call to the backend's
+generate pic endpoint, passing the workbook.
 
 
 

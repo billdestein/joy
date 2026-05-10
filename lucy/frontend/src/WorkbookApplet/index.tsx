@@ -1,64 +1,75 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import { PicListComponent } from '../PicListComponent'
 import { ViewerComponent } from '../ViewerComponent'
 import { ComposerComponent } from '../ComposerComponent'
 
 interface Props {
     workbookName: string
-    onClose: () => void
 }
 
-export function WorkbookApplet({ workbookName: _workbookName, onClose: _onClose }: Props) {
-    const [leftPct, setLeftPct] = useState(30)
-    const [topPct, setTopPct] = useState(60)
+export function WorkbookApplet({ workbookName }: Props) {
     const containerRef = useRef<HTMLDivElement>(null)
-    const hDrag = useRef<{ startX: number; startPct: number } | null>(null)
-    const vDrag = useRef<{ startY: number; startPct: number } | null>(null)
+    const rightRef = useRef<HTMLDivElement>(null)
 
-    const onHDown = useCallback((e: React.MouseEvent) => {
+    function startHorizDrag(e: React.MouseEvent) {
         e.preventDefault()
-        hDrag.current = { startX: e.clientX, startPct: leftPct }
-    }, [leftPct])
-
-    const onVDown = useCallback((e: React.MouseEvent) => {
-        e.preventDefault()
-        vDrag.current = { startY: e.clientY, startPct: topPct }
-    }, [topPct])
-
-    useEffect(() => {
-        function onMove(e: MouseEvent) {
-            if (hDrag.current && containerRef.current) {
-                const dx = e.clientX - hDrag.current.startX
-                const pct = Math.max(10, Math.min(90, hDrag.current.startPct + (dx / containerRef.current.clientWidth) * 100))
-                setLeftPct(pct)
-            }
-            if (vDrag.current) {
-                const rightPane = containerRef.current?.querySelector('.right-pane') as HTMLElement | null
-                if (!rightPane) return
-                const dy = e.clientY - vDrag.current.startY
-                const pct = Math.max(10, Math.min(90, vDrag.current.startPct + (dy / rightPane.clientHeight) * 100))
-                setTopPct(pct)
-            }
+        const container = containerRef.current
+        if (!container) return
+        const onMove = (ev: MouseEvent) => {
+            const rect = container.getBoundingClientRect()
+            const pct = Math.max(10, Math.min(90, ((ev.clientX - rect.left) / rect.width) * 100))
+            const left = container.querySelector<HTMLElement>('[data-pane="left"]')
+            const right = container.querySelector<HTMLElement>('[data-pane="right"]')
+            if (left) left.style.width = `${pct}%`
+            if (right) right.style.width = `${100 - pct}%`
         }
-        function onUp() { hDrag.current = null; vDrag.current = null }
-        document.addEventListener('mousemove', onMove)
-        document.addEventListener('mouseup', onUp)
-        return () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp) }
-    }, [])
+        const onUp = () => {
+            window.removeEventListener('mousemove', onMove)
+            window.removeEventListener('mouseup', onUp)
+        }
+        window.addEventListener('mousemove', onMove)
+        window.addEventListener('mouseup', onUp)
+    }
+
+    function startVertDrag(e: React.MouseEvent) {
+        e.preventDefault()
+        const right = rightRef.current
+        if (!right) return
+        const onMove = (ev: MouseEvent) => {
+            const rect = right.getBoundingClientRect()
+            const pct = Math.max(10, Math.min(90, ((ev.clientY - rect.top) / rect.height) * 100))
+            const top = right.querySelector<HTMLElement>('[data-pane="top"]')
+            const bottom = right.querySelector<HTMLElement>('[data-pane="bottom"]')
+            if (top) top.style.height = `${pct}%`
+            if (bottom) bottom.style.height = `${100 - pct}%`
+        }
+        const onUp = () => {
+            window.removeEventListener('mousemove', onMove)
+            window.removeEventListener('mouseup', onUp)
+        }
+        window.addEventListener('mousemove', onMove)
+        window.addEventListener('mouseup', onUp)
+    }
 
     return (
-        <div ref={containerRef} style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden' }}>
-            <div style={{ width: `${leftPct}%`, height: '100%', overflow: 'hidden', flexShrink: 0 }}>
+        <div ref={containerRef} style={{ width: '100%', height: '100%', display: 'flex', overflow: 'hidden' }}>
+            <div data-pane="left" style={{ width: '30%', overflow: 'hidden', flexShrink: 0 }}>
                 <PicListComponent />
             </div>
-            <div onMouseDown={onHDown} style={{ width: 5, flexShrink: 0, background: '#2a3a50', cursor: 'col-resize' }} />
-            <div className="right-pane" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                <div style={{ height: `${topPct}%`, overflow: 'hidden', flexShrink: 0 }}>
+            <div
+                onMouseDown={startHorizDrag}
+                style={{ width: 5, cursor: 'col-resize', background: '#2a3a50', flexShrink: 0 }}
+            />
+            <div ref={rightRef} data-pane="right" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div data-pane="top" style={{ height: '60%', overflow: 'hidden', flexShrink: 0 }}>
                     <ViewerComponent />
                 </div>
-                <div onMouseDown={onVDown} style={{ height: 5, flexShrink: 0, background: '#2a3a50', cursor: 'row-resize' }} />
-                <div style={{ flex: 1, overflow: 'hidden' }}>
-                    <ComposerComponent />
+                <div
+                    onMouseDown={startVertDrag}
+                    style={{ height: 5, cursor: 'row-resize', background: '#2a3a50', flexShrink: 0 }}
+                />
+                <div data-pane="bottom" style={{ flex: 1, overflow: 'hidden' }}>
+                    <ComposerComponent workbookName={workbookName} />
                 </div>
             </div>
         </div>

@@ -46,9 +46,10 @@ gridApi.getDisplayedRowAtIndex(rowIndex) to get the row data. Store the grid API
 onGridReady.
 
 The open callback function calls canvas.addFrame to add the WorkbookApplet.
+The selected workbook name is passed as a prop to the WorkbookApplet.
 
 
-The surrounding frame has these three FrameHeaderButtonComponents:
+The surrounding frame has these three FrameHeaderButtonComponents:  
 
 {
     icon: ButtonIcons.plus
