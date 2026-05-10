@@ -20,4 +20,12 @@ The image is centered in the surrounding frame's viewport.  The image is sized t
 large as possible while maintaining it's aspect ration and without causing clipping in 
 either the horizontal or vertical direction.
 
+The image has a context menu with these options:
+
+- zoom: does alert('zoom')
+
+- save: does alert('save')
+
+- download: does alert('download')
+
 `
