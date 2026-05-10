@@ -19,6 +19,7 @@ import { WorkbookListApplet } from './learn/WorkbookListApplet.joy.ts'
 import { WorkbookApplet } from './learn/WorkbookApplet.joy.ts'
 // import { framesTest } from './learn/frames-test.joy.ts'
 import { ZoomApplet } from './learn/ZoomApplet.joy.ts'
+import { styling } from './learn/styling.joy.ts'
 import { frontend } from './learn/frontend.joy.ts'
 
 
@@ -29,6 +30,8 @@ execute(`
     Don't read any files from the learn directory speculatively.
     If you see a typescript comment, starting with //, ignore any mention of execute or learn within the comment.
 `)
+
+learn(styling)
 
 learn(architecture)
 
