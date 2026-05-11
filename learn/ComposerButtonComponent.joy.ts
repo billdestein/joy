@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------------------------------
-// ComposerButtonComponent
+// composerButtonComponent
 //----------------------------------------------------------------------------------------------------
-export const ComposerButtonComponent = `
+export const composerButtonComponent = `
 
 ComposerButtonComponent is a React Component.  
 

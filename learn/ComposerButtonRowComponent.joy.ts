@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------------------------------
-// ComposerButtonRowComponent
+// composerButtonRowComponent
 //----------------------------------------------------------------------------------------------------
-export const ComposerButtonRowComponent = `
+export const composerButtonRowComponent = `
 
 The ComposerButtonRowComponent contains three ComposerButtonComponent.  They are:
 

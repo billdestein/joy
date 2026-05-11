@@ -1,51 +1,68 @@
-import { useState } from 'react'
-import { ButtonConfig } from './types'
+import React, { useState, useRef, useEffect } from 'react'
 
-interface Props extends ButtonConfig {}
+type Props = {
+    icon: React.ReactNode
+    handler: () => void
+    tooltipLabel: string
+}
 
-export function FrameHeaderButtonComponent({ icon, toolTipLabel, handler }: Props) {
+export default function FrameHeaderButtonComponent({ icon, handler, tooltipLabel }: Props) {
     const [hovered, setHovered] = useState(false)
-    const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null)
+    const [showTooltip, setShowTooltip] = useState(false)
+    const btnRef = useRef<HTMLButtonElement>(null)
+    const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 })
 
-    function handleMouseEnter(e: React.MouseEvent<HTMLDivElement>) {
-        setHovered(true)
-        const rect = e.currentTarget.getBoundingClientRect()
-        setTooltipPos({ x: rect.left + rect.width / 2, y: rect.top })
-    }
-
-    function handleMouseLeave() {
-        setHovered(false)
-        setTooltipPos(null)
-    }
+    useEffect(() => {
+        if (showTooltip && btnRef.current) {
+            const rect = btnRef.current.getBoundingClientRect()
+            setTooltipPos({
+                top: rect.top - 28,
+                left: rect.left + rect.width / 2,
+            })
+        }
+    }, [showTooltip])
 
     return (
-        <div style={{ position: 'relative', display: 'inline-flex' }}>
-            {tooltipPos && (
-                <div style={{
-                    position: 'fixed',
-                    top: tooltipPos.y - 4,
-                    left: tooltipPos.x,
-                    transform: 'translate(-50%, -100%)',
-                    background: '#333', color: '#fff',
-                    padding: '2px 6px', borderRadius: 3, fontSize: 11, whiteSpace: 'nowrap',
-                    pointerEvents: 'none', zIndex: 99999,
-                }}>
-                    {toolTipLabel}
-                </div>
-            )}
-            <div
+        <>
+            <button
+                ref={btnRef}
+                onMouseEnter={() => { setHovered(true); setShowTooltip(true) }}
+                onMouseLeave={() => { setHovered(false); setShowTooltip(false) }}
                 onClick={handler}
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
                 style={{
-                    width: 22, height: 22, display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', borderRadius: 3, cursor: 'pointer',
-                    background: hovered ? '#4a6080' : 'transparent', color: '#ccc',
-                    fontSize: 14, flexShrink: 0,
+                    background: hovered ? '#3a3a5c' : 'transparent',
+                    border: 'none',
+                    color: '#ccc',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '4px',
+                    borderRadius: '3px',
                 }}
             >
                 {icon}
-            </div>
-        </div>
+            </button>
+            {showTooltip && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: tooltipPos.top,
+                        left: tooltipPos.left,
+                        transform: 'translateX(-50%)',
+                        background: '#222',
+                        color: '#eee',
+                        padding: '2px 8px',
+                        borderRadius: '3px',
+                        fontSize: '11px',
+                        whiteSpace: 'nowrap',
+                        pointerEvents: 'none',
+                        zIndex: 99999,
+                    }}
+                >
+                    {tooltipLabel}
+                </div>
+            )}
+        </>
     )
 }

@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------------------------------
-// FrameHeaderButtonComponent
+// frameHeaderButtonComponent
 //----------------------------------------------------------------------------------------------------
-export const FrameHeaderButtonComponent = `
+export const frameHeaderButtonComponent = `
 
 FrameHeaderButtonComponent is a React Component.  
 

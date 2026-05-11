@@ -1,22 +1,19 @@
 //----------------------------------------------------------------------------------------------------
-// WorkbookApplet
+// workbookFrame
 //----------------------------------------------------------------------------------------------------
-export const WorkbookApplet = `
+export const workbookFrame = `
 
-The WorkbookApplet is an applet.  That means it's a React function component running as a React
-child in a Frame component.
+The WorkbookFrame is a React component that wraps Frame.
 
-The WorkbookApplet is implemented in the file lucy/frontend/src/WorkbookApplet.
-
-The surrounding frame has a single FrameHeaderButtonComponents:
+The frame header has a single FrameHeaderButtonComponents:
 
 {
-    icon: ButtonIcons.close
+    icon: ButtonIcons.x
     toolTipLabel: 'Close'
     Handler: Call Canvas.removeFrame
 }
 
-The applet viewport is split into two panes, left and right, by a five-pixel slider.
+The frame viewport is split into two panes, left and right, by a five-pixel slider.
 Initially, the left pane is 30% wide.
 
 The right pane is split into two panes, top and bottom, by a five-pixel slider.

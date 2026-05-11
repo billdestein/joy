@@ -1,25 +1,17 @@
 import React from 'react'
 
-export interface ButtonConfig {
-    icon: React.ReactNode
-    toolTipLabel: string
-    handler: () => void
-}
-
-export interface AddFrameConfig {
-    width: number
-    height: number
-    x?: number
-    y?: number
-    isModal?: boolean
-    title?: string
-    renderChild: (onClose: () => void) => React.ReactNode
-    getButtons?: (onClose: () => void) => ButtonConfig[]
-}
-
-export interface FrameEntry {
+export type FrameProps = {
     frameId: number
+    height: number
+    isModal: boolean
+    message: unknown
+    width: number
+    x: number
+    y: number
     zIndex: number
-    config: AddFrameConfig
-    clickCatcherZIndex?: number
+}
+
+export type FrameEntry = {
+    component: React.ComponentType<FrameProps>
+    props: FrameProps
 }

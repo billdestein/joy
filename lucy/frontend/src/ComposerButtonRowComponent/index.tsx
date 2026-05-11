@@ -1,14 +1,17 @@
-import { WorkbookType, PromptType } from '@billdestein/joy-common'
-import { ComposerButtonComponent } from '../ComposerButtonComponent'
+import React from 'react'
+import ComposerButtonComponent from '../ComposerButtonComponent'
 import { ButtonIcons } from '../ButtonIcons'
+import { WorkbookType, PromptType } from '@billdestein/joy-common'
+import * as api from '../api'
 
-interface Props {
-    getPrompt: () => string
-    workbookName: string
-    onImageGenerated: (encodedImage: string, mimeType: string) => void
+type Props = {
+    workbook: WorkbookType
+    onWorkbookUpdate: (workbook: WorkbookType, encodedImage: string, mimeType: string) => void
+    editorRef: React.MutableRefObject<import('monaco-editor').editor.IStandaloneCodeEditor | null>
+    onGenerating: (generating: boolean) => void
 }
 
-export function ComposerButtonRowComponent({ getPrompt, workbookName, onImageGenerated }: Props) {
+export default function ComposerButtonRowComponent({ workbook, onWorkbookUpdate, editorRef, onGenerating }: Props) {
     function previousPrompt() {
         alert('previousPrompt')
     }
@@ -18,46 +21,43 @@ export function ComposerButtonRowComponent({ getPrompt, workbookName, onImageGen
     }
 
     async function runPrompt() {
-        const text = getPrompt()
+        const text = editorRef.current?.getValue() ?? ''
+        const newPrompt: PromptType = {
+            createdAt: Date.now(),
+            focused: true,
+            text,
+        }
+        const updatedPrompts = [
+            ...workbook.prompts.map(p => ({ ...p, focused: false })),
+            newPrompt,
+        ]
+        const updatedWorkbook: WorkbookType = { ...workbook, prompts: updatedPrompts }
 
-        const res = await fetch(`/v1/workbooks/get-workbook?workbookName=${encodeURIComponent(workbookName)}`, {
-            credentials: 'include',
-        })
-        if (!res.ok) return
-        const data = await res.json()
-        const workbook: WorkbookType = data.workbook
-
-        const newPrompt: PromptType = { createdAt: Date.now(), focused: true, text }
-        const updatedPrompts: PromptType[] = workbook.prompts.map((p) => ({ ...p, focused: false }))
-        updatedPrompts.push(newPrompt)
-        workbook.prompts = updatedPrompts
-
-        const genRes = await fetch('/v1/workbooks/generate-pic', {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ workbook }),
-        })
-        if (!genRes.ok) return
-
-        const genData = await genRes.json() as { workbook: WorkbookType; encodedImage: string }
-        const mimeType = genData.workbook.pics.find((p) => p.filename === 'unnamed')?.mimeType ?? 'image/png'
-        onImageGenerated(genData.encodedImage, mimeType)
+        onGenerating(true)
+        try {
+            const result = await api.generatePic(updatedWorkbook)
+            const mimeType = result.workbook.pics.find(p => p.filename === 'unnamed')?.mimeType ?? 'image/png'
+            onWorkbookUpdate(result.workbook, result.encodedImage, mimeType)
+        } finally {
+            onGenerating(false)
+        }
     }
 
     return (
         <div style={{
+            height: '36px',
             display: 'flex',
             alignItems: 'center',
-            gap: 4,
-            padding: '4px 8px',
-            borderTop: '1px solid #2a3a50',
-            background: '#1a2533',
+            justifyContent: 'flex-end',
+            padding: '0 6px',
+            gap: '4px',
+            background: '#1a1a1a',
+            borderTop: '1px solid #333',
             flexShrink: 0,
         }}>
-            <ComposerButtonComponent icon={ButtonIcons.previous} handler={previousPrompt} toolTipLabel="Previous Prompt" />
-            <ComposerButtonComponent icon={ButtonIcons.next} handler={nextPrompt} toolTipLabel="Next Prompt" />
-            <ComposerButtonComponent icon={ButtonIcons.play} handler={runPrompt} toolTipLabel="Run Prompt" />
+            <ComposerButtonComponent icon={ButtonIcons.previous} handler={previousPrompt} tooltipLabel="Previous Prompt" />
+            <ComposerButtonComponent icon={ButtonIcons.next} handler={nextPrompt} tooltipLabel="Next Prompt" />
+            <ComposerButtonComponent icon={ButtonIcons.play} handler={runPrompt} tooltipLabel="Run Prompt" />
         </div>
     )
 }

@@ -65,6 +65,7 @@ Endpoint: /v1/auth/login (POST)
     - Compute a random session id
     - Store the session in an HTTP-only cookie
     - Create a User object with the session id and email.
+    - Create the newly logged-in user's directory if it does not exist: MOUNT_DIR/users/{slug}
   - Output
     - None
 
@@ -103,19 +104,21 @@ Endpoint: /v1/workbooks/delete-workbook (POST)
     - Delete the workbook
     - Delete associated pic files
   - Output:
-    - None
+    - workbooks: WorkbookType[]
 
 Endpoint: /v1/workbooks/generate-pic (POST)
   - Input:
-    - workbook
+    - workbook: WorkbookType
   - Processing:
-    - USE npm module "@google/genai": "^1.50.0",
+    - Use @google/genai": "^1.50.0"
+    - Use model imagen-4.0-generate-001
     - Call Gemini passing the focused prompt
+    - Wrap the Gemini call in try/catch; on error, log the error and return status 500 with the error message
     - Put the resulting image in a file named 'unnamed'
     - Add a pic to the workbook
   - Output
     - workbook
-    - encoded image
+    - encoded image (a base64-encoded image)
 
 Endpoint: /v1/workbooks/get-workbook (GET)
   - Input:
@@ -129,7 +132,7 @@ Endpoint: /v1/workbooks/list-workbooks (GET)
 - Input:
   - None
 - Processing
-  - None
+  - Construct an array of workbooks by simply reading the workbook.json files.
 - Output:
   - workbooks: WorkbookType[]
         
@@ -148,12 +151,12 @@ Some miscellaneous stuff:
 
 The backend uses the standard redis client library -- not ioredis
 
-The path for workbooks is: MOUNT_DIR/users/{slug}/{workbookName}/
+The path for workbooks is: MOUNT_DIR/users/{slug}/workbooks/{workbookName}/
 
 MOUNT_DIR may begin with ~. Tilde is not expanded when bash assigns environment variables from
 jq output, so the backend must expand it explicitly: replace a leading ~ with os.homedir()
 before constructing any file path.
 
-The backend uses Google's Imagegen API
+At initialization, the backend server creates MOUNT_DIR/users if it does not exist.
 
 `

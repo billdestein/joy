@@ -1,0 +1,96 @@
+//----------------------------------------------------------------------------------------------------
+// Windows
+//----------------------------------------------------------------------------------------------------
+export const windows = `
+
+The windows library is a windowing system for React applications.
+
+The idea is that we want to have a single main react app.  The main react has a div, 
+usually a large div, that we call the canvas.  Within the canvas, we can have multiple 'Frames'.  
+A frame is a rectangular region that can be dragged and resized through mouse gestures.  When 
+there are two or more frames on the canvas, the frams can be stacked and restacked (using z-index).
+
+The windows library consists of two parts: the Canvas, and the Frame.
+
+The Canvas is a small library written in Typescript.  It has functions addFrame and removeFrame.
+
+The main React app renders a div and then tells the Canvas library to use that div as the canvas.
+
+The Frame is a React function component defined in lucy/frontend/src/Frame
+
+The Frame compontent takes a single argument of type FrameProps.  FrameProps type is:
+
+type FrameProps = {
+    frameId: number
+    height: number
+    isModal: boolean
+    message: any
+    width: number
+    x: number
+    y: number
+    zIndex: number
+}
+
+The Frame has this layout:
+
+- A rectangular viewport.
+- Above the viewport is a FrameHeader.  More on FrameHeader below.
+- The FrameHeader is used as a grab bar for moving the frame.
+- Around the viewport and the header is a five-pixel border.
+- The grab spot for resizing is anywhere on the border, and anywhere five pixels inside the border.
+
+The FrameProps properties are:
+
+- frameId is a number that uniquely identifies the frame.  It is generate by the Canvas in the
+  addFrame function.  When it's time to remove the frame from the Canvas, the frame's frameId
+  is passed to the Canvas removeFrame function.
+
+- height is the initial height of the Frame's viewport in pixels.  Defaults to 600
+
+- isModal indicates whether or not the frame is a 'modal' frame.  More information on modal
+  frames follows.
+
+- message is an opaque object of type any.  The message is used to specialize the frame.
+  The windows system does not know about its contents nor does it care about its contents.
+
+- width is the initial width of the Frame's viewport in pixels. Defaults to 800
+
+- x is the initial dixtance in pixels from the left edge of the canvas to the left edge of the frame.
+  If not specified, the frame sets x to the x value of the nearest frame (in z order) plus 50.
+
+- y is the initial dixtance in pixels from the top of the canvas to the top of the frame.
+  If not specified, the frame sets y to the y value of the nearest frame (in z order) plus 50.
+
+The Canvas addFrame function takes two arguments.  The first is the component type, and the
+second is of type FrameProps.
+
+For each frame currently on the canvas, the canvas has it's own representation of the
+frame.  That representation includes the FrameProps.  So it has initial values for x,
+y, height, width and z-index.  The representation also includes the frames' current
+x, y, height, width and z-index.
+
+Modal frames are different from regular frames.  When the Canvas adds a new modal frame, it first adds 
+a 'click catcher' div to the DOM.  The click catcher div is translucent rgba(0, 255, 0, 0.5).
+The click catcher covers the entire canvas.  It has a z-index one greater current z-index of all
+frames currently on the canvas.  The click catcher blocks all pointer events from reaching anything behind it.  Do not set pointer-events:none on it — that would cause clicks to pass through rather than be blocked.  Once the click catcher 
+is in place, the canvas adds the new modal frame.  The modal frame is centered on the canvas both 
+horizontally and vertically. Its x and y props are ignored. Its z-index value is one greater than that
+of the click catcher. When asked to remove the modal frame, the canvas also removes the click catcher 
+div from the DOM.
+
+All dragging, resizing and restacking is done through direct DOM manipulation.  We don't want mouse gestures on 
+one Frame to cause React to rerender other frames.  Each frame keeps track if its own x, y, height, width and z-index.
+
+The frame can only be moved up to the point where the top of the frame touches the top of the canvas.
+
+When moving a frame left and right, they will be clipped by the canvas, but never revealing less than 40 pixels.
+
+The frame can only be move down to the point where the bottom of the header touches the bottom of the canvas.
+
+`
+
+// Modal frames are different from regular frames.  When the Canvas adds a new modal frame, it first adds 
+// a div into the DOM that we call the click catcher div.  The click catcher is translucent and covers the 
+// entire canvas.  The click catcher has a z-index one greater than the nearest frame.  Then the Canvas adds 
+// the modal frame centered in the canvas both horizontally and vertically.  The x and y props are ignored.  
+// The canvas.removeFrame removes both the modal frame and the click catcher.

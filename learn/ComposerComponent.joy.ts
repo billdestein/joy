@@ -1,9 +1,11 @@
 //----------------------------------------------------------------------------------------------------
-// ComposerComponent
+// composerComponent
 //----------------------------------------------------------------------------------------------------
-export const ComposerComponent = `
+export const composerComponent = `
 
-The composer component contains a ComposerEditorComponent and a ComposerButtonRowComponent.
+ComposerComponent is a React component
+
+ComposerComponent component contains a ComposerEditorComponent and a ComposerButtonRowComponent.
 
 The ComposerButtonRowComponent goes at the bottom of the ComposerComponent viewport and is 
 of fixed height.

@@ -2,28 +2,24 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-
-# Build common package first
-cd "$SCRIPT_DIR/../common"
-npm run build
-cd "$SCRIPT_DIR"
-
-MODE="${1:-local}"
+MODE=${1:-local}
 
 if [ "$MODE" = "prod" ]; then
-  CONFIG_FILE=~/lucy-config/BackendProdConfig.json
+    CONFIG_FILE=~/lucy-config/BackendProdConfig.json
 else
-  CONFIG_FILE=~/lucy-config/BackendLocalConfig.json
+    CONFIG_FILE=~/lucy-config/BackendLocalConfig.json
 fi
 
-CONFIG=$(cat "$CONFIG_FILE")
+export COGNITO_REGION=$(jq -r '.COGNITO_REGION' "$CONFIG_FILE")
+export COGNITO_USER_POOL_ID=$(jq -r '.COGNITO_USER_POOL_ID' "$CONFIG_FILE")
+export GOOGLE_API_KEY=$(jq -r '.GOOGLE_API_KEY' "$CONFIG_FILE")
+export MOUNT_DIR=$(jq -r '.MOUNT_DIR' "$CONFIG_FILE")
+export ORIGIN=$(jq -r '.ORIGIN' "$CONFIG_FILE")
+export REDIS_HOST=$(jq -r '.REDIS_HOST' "$CONFIG_FILE")
+export REDIS_PORT=$(jq -r '.REDIS_PORT' "$CONFIG_FILE")
 
-export COGNITO_REGION=$(echo "$CONFIG" | jq -r '.COGNITO_REGION')
-export COGNITO_USER_POOL_ID=$(echo "$CONFIG" | jq -r '.COGNITO_USER_POOL_ID')
-export GOOGLE_API_KEY=$(echo "$CONFIG" | jq -r '.GOOGLE_API_KEY')
-export MOUNT_DIR=$(echo "$CONFIG" | jq -r '.MOUNT_DIR')
-export ORIGIN=$(echo "$CONFIG" | jq -r '.ORIGIN')
-export REDIS_HOST=$(echo "$CONFIG" | jq -r '.REDIS_HOST')
-export REDIS_PORT=$(echo "$CONFIG" | jq -r '.REDIS_PORT')
+cd "$SCRIPT_DIR/../common"
+npm run build
 
+cd "$SCRIPT_DIR"
 npx ts-node src/index.ts

@@ -1,32 +1,32 @@
+import React, { useRef } from 'react'
 import Editor, { OnMount } from '@monaco-editor/react'
 
-interface EditorHandle {
-    getValue: () => string
+type Props = {
+    editorRef: React.MutableRefObject<import('monaco-editor').editor.IStandaloneCodeEditor | null>
+    initialText?: string
 }
 
-interface Props {
-    editorRef: React.MutableRefObject<EditorHandle | null>
-}
-
-export function ComposerEditorComponent({ editorRef }: Props) {
+export default function ComposerEditorComponent({ editorRef, initialText }: Props) {
     const handleMount: OnMount = (editor) => {
-        editorRef.current = { getValue: () => editor.getValue() }
+        editorRef.current = editor
     }
 
     return (
-        <Editor
-            height="100%"
-            width="100%"
-            defaultLanguage="plaintext"
-            theme="vs-dark"
-            onMount={handleMount}
-            options={{
-                minimap: { enabled: false },
-                fontSize: 13,
-                lineNumbers: 'off',
-                wordWrap: 'on',
-                scrollBeyondLastLine: false,
-            }}
-        />
+        <div style={{ width: '100%', height: '100%' }}>
+            <Editor
+                height="100%"
+                defaultLanguage="plaintext"
+                defaultValue={initialText ?? ''}
+                theme="vs-dark"
+                onMount={handleMount}
+                options={{
+                    minimap: { enabled: false },
+                    wordWrap: 'on',
+                    fontSize: 13,
+                    lineNumbers: 'off',
+                    scrollBeyondLastLine: false,
+                }}
+            />
+        </div>
     )
 }

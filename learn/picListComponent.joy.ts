@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------------------------------
-// PicListComponent
+// picListComponent
 //----------------------------------------------------------------------------------------------------
-export const PicListComponent = `
+export const picListComponent = `
 
 The PicListComponent simply shows the string "PicList"
 

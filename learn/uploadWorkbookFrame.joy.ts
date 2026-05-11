@@ -1,8 +1,10 @@
 //----------------------------------------------------------------------------------------------------
-// composerEditorComponent
+// uploadWorkbookFrame
 //----------------------------------------------------------------------------------------------------
-export const composerEditorComponent = `
+export const uploadWorkbookFrame = `
 
-The entire viewport of the composerEditorComponent is filled with a React Monaco editor.
+The UploadWorkbookFrame is a React component that wraps Frame.
+
+The frame viewport has test "UploadWorkbookFrame"
 
 `

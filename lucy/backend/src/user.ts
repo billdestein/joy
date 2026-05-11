@@ -10,9 +10,10 @@ function emailToSlug(email: string): string {
 }
 
 export function findOrCreateUser(email: string): User {
-    const existing = users.get(email)
-    if (existing) return existing
-    const user: User = { email, slug: emailToSlug(email) }
-    users.set(email, user)
+    let user = users.get(email)
+    if (!user) {
+        user = { email, slug: emailToSlug(email) }
+        users.set(email, user)
+    }
     return user
 }

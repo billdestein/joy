@@ -1,12 +1,9 @@
 //----------------------------------------------------------------------------------------------------
-// WorkbookListApplet
+// workbookListFrame
 //----------------------------------------------------------------------------------------------------
-export const WorkbookListApplet = `
+export const workbookListFrame = `
 
-The WorkbookListApplet is an applet.  That means it's a React function component running as a React
-child in a Frame component.
-
-The WorkbookListApplet is implemented in the file lucy/frontend/src/WorkbookListApplet.
+The WorkbookListFrame is a React component that wraps Frame.
 
 At initialization, a WorkbookListWidget calls the list-workbooks endpoint on the backend servver.
 
@@ -24,7 +21,9 @@ Each row has three columns
 
 (1) name is string
 
-(2) lastModifiedISO is the workbook's last modified timestamp as an ISO datetime string.
+(2) lastModifiedISO is the workbook's last modified timestamp as an ISO datetime string,
+    with these modifications.  Remove milliseconds.  Replace 'T' with ' '.  Remove 'Z'.
+    Use a fixed width font so all values in the column have the same width.
 
 (3) lastModifiedAgo is the time since the workbook was last modified expressed as xxx days
 ago, or xxx hours ago, or xxx minutes ago.
@@ -35,9 +34,6 @@ Each row has a context menu.  The context menu is implemented from scratch.  It 
 use AG Grids context menu features.  When the user right clicks on a row, the context menu
 pops up, with its uper left corner at the cursor position when the click event happened.
 
-The context menu has two choices: Open and Delete.  For now the delete callback function
-simply logs 'delete'.
-
 Implement right-click detection using a native 'contextmenu' event listener attached to the
 grid container div via useEffect — do not use AG Grid's onRowContextMenu or onCellContextMenu
 props. In the handler, call preventDefault(), then walk up from event.target using
@@ -45,11 +41,18 @@ props. In the handler, call preventDefault(), then walk up from event.target usi
 gridApi.getDisplayedRowAtIndex(rowIndex) to get the row data. Store the grid API via
 onGridReady.
 
-The open callback function calls canvas.addFrame to add the WorkbookApplet.
-The selected workbook name is passed as a prop to the WorkbookApplet.
+The context menu has these three options:
 
+The "Delete workbook" option makes an API call to the backend's 
+delete-workbook endpoint.  It uses the response to refresh the grid.
 
-The surrounding frame has these three FrameHeaderButtonComponents right-aligned in the header:  
+The "Download workbook" option stringifies the workbook with an indent of four, 
+and downloads it as workbook.lucy.
+
+The "Open workbook" calls canvas.addFrame to add the WorkbookFrame.
+The selected workbook name is passed as a prop to the WorkbookFrane.
+
+The frame has these three FrameHeaderButtonComponents right-aligned in the header:  
 
 {
     icon: ButtonIcons.plus
@@ -64,20 +67,20 @@ The surrounding frame has these three FrameHeaderButtonComponents right-aligned 
 }
 
 {
-    icon: ButtonIcons.close
+    icon: ButtonIcons.x
     toolTipLabel: 'Close'
     Handler: Call Canvas.removeFrame
 }
 
 The surrounding frame has the string 'Workbooks' left-aligned in the header.
 
-The addNotebookNandler function creates an instance of the GetWorkbookNameApplet.  The
-GetWorkbookNameApplet calls it's callback function with a name for the new workbook.
+The addWorkbookNandler function creates an instance of the GetWorkbookNameFrame.  The
+GetWorkbookNameFrame calls it's callback function with a name for the new workbook.
 The callback function then makes an API call to the backend's create-workbook endpoint.
 
 
-The uploaWorkbook function creates an instance of the UploadWorkbookApplet.  The 
-UploadWorkbookApplet calls its callback function when complete.  The callback
+The uploaWorkbook function creates an instance of the UploadWorkbookFrame.  The 
+UploadWorkbookFrame calls its callback function when complete.  The callback
 function refreshes the grid.
 
 `

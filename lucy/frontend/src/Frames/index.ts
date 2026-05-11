@@ -1,4 +1,4 @@
-export { canvas, Canvas, getNextZIndex } from './Canvas'
-export { Frame } from './Frame'
-export { FrameHeaderButtonComponent } from './FrameHeaderButtonComponent'
-export type { AddFrameConfig, ButtonConfig, FrameEntry } from './types'
+export { initCanvas, addFrame, removeFrame, bringToFront } from './Canvas'
+export { default as Frame } from './Frame'
+export { default as FrameHeaderButtonComponent } from './FrameHeaderButtonComponent'
+export type { FrameProps } from './types'

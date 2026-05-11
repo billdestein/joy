@@ -1,97 +1,39 @@
-import { canvas } from '../Frames'
-import { ButtonIcons } from '../ButtonIcons'
-import { WorkbookListApplet } from '../WorkbookListApplet'
-import { GetWorkbookNameApplet } from '../GetWorkbookNameApplet'
-import { UploadWorkbookApplet } from '../UploadWorkbookApplet'
+import React from 'react'
+import { addFrame } from '../Frames'
+import WorkbookListFrame from '../WorkbookListFrame'
 
-export function MainMenuComponent() {
+export default function MainMenuComponent() {
     function openWorkbooks() {
-        const refreshRef = { current: async () => {} }
-
-        canvas.addFrame({
-            width: 640,
-            height: 440,
-            title: 'Workbooks',
-            renderChild: () => <WorkbookListApplet refreshRef={refreshRef} />,
-            getButtons: (onClose) => [
-                {
-                    icon: ButtonIcons.plus,
-                    toolTipLabel: 'New Workbook',
-                    handler: () => {
-                        canvas.addFrame({
-                            width: 400,
-                            height: 220,
-                            isModal: true,
-                            renderChild: (modalOnClose) => (
-                                <GetWorkbookNameApplet
-                                    onOk={async (name) => {
-                                        await fetch('/v1/workbooks/create-workbook', {
-                                            method: 'POST',
-                                            credentials: 'include',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ workbookName: name }),
-                                        })
-                                        await refreshRef.current()
-                                    }}
-                                    onClose={modalOnClose}
-                                />
-                            ),
-                        })
-                    },
-                },
-                {
-                    icon: ButtonIcons.upload,
-                    toolTipLabel: 'Add Workbook',
-                    handler: () => {
-                        canvas.addFrame({
-                            width: 400,
-                            height: 300,
-                            isModal: true,
-                            renderChild: (modalOnClose) => (
-                                <UploadWorkbookApplet
-                                    onClose={async () => {
-                                        await refreshRef.current()
-                                        modalOnClose()
-                                    }}
-                                />
-                            ),
-                        })
-                    },
-                },
-                {
-                    icon: ButtonIcons.close,
-                    toolTipLabel: 'Close',
-                    handler: onClose,
-                },
-            ],
+        addFrame(WorkbookListFrame, {
+            width: 700,
+            height: 400,
+            isModal: false,
+            message: null,
         })
     }
 
     return (
         <div style={{
             width: '100%',
-            height: 40,
-            background: '#0f1a24',
-            borderBottom: '1px solid #2a3a50',
+            height: '40px',
+            background: '#1a1a2e',
             display: 'flex',
             alignItems: 'center',
-            padding: '0 12px',
+            padding: '0 10px',
+            gap: '8px',
             flexShrink: 0,
-            gap: 4,
         }}>
             <button
                 onClick={openWorkbooks}
                 style={{
-                    padding: '4px 12px',
-                    background: 'transparent',
-                    border: '1px solid #2a3a50',
-                    borderRadius: 4,
-                    color: '#cce0ff',
-                    fontSize: 13,
+                    background: '#2a2a4a',
+                    border: '1px solid #444',
+                    color: '#ccc',
+                    padding: '4px 14px',
                     cursor: 'pointer',
+                    borderRadius: '3px',
+                    fontSize: '13px',
                 }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#1a2533' }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
             >
                 Workbooks
             </button>

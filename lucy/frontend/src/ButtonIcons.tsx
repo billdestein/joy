@@ -1,11 +1,28 @@
-import { BsArrowLeftShort, BsChevronLeft, BsChevronRight, BsFile, BsFolder, BsGear, BsPlay, BsPlusLg, BsTrash, BsUpload, BsX, BsSkipBackwardFill, BsSkipForwardFill } from 'react-icons/bs'
-import { FaArrowCircleLeft, FaArrowCircleRight, FaRegSave, FaSave } from 'react-icons/fa'
+import { BsArrowLeftShort } from 'react-icons/bs'
+import { BsChevronLeft } from 'react-icons/bs'
+import { BsChevronRight } from 'react-icons/bs'
+import { BsFile } from 'react-icons/bs'
+import { BsFolder } from 'react-icons/bs'
+import { BsGear } from 'react-icons/bs'
+import { BsPlay } from 'react-icons/bs'
+import { BsPlusLg } from 'react-icons/bs'
+import { BsTrash } from 'react-icons/bs'
+import { BsUpload } from 'react-icons/bs'
+import { BsX } from 'react-icons/bs'
+import { FaArrowCircleLeft } from 'react-icons/fa'
+import { FaArrowCircleRight } from 'react-icons/fa'
 import { FaRegCopy } from 'react-icons/fa6'
+import { FaRegSave } from 'react-icons/fa'
+import { FaSave } from 'react-icons/fa'
+import { BsSkipBackwardFill } from 'react-icons/bs'
+import { BsSkipForwardFill } from 'react-icons/bs'
+import React from 'react'
 
 const size = 18
 
 export const ButtonIcons = {
     back: <BsArrowLeftShort size={size} />,
+    close: <BsX size={20} />,
     goLeft: <BsChevronLeft size={size} />,
     goRight: <BsChevronRight size={size} />,
     faRegCopy: <FaRegCopy size={16} />,
@@ -19,7 +36,6 @@ export const ButtonIcons = {
     trash: <BsTrash size={size} />,
     upload: <BsUpload size={14} />,
     x: <BsX size={20} />,
-    close: <BsX size={20} />,
     save: <FaRegSave size={size} />,
     saveAs: <FaSave size={size} />,
     skipBackward: <BsSkipBackwardFill size={size} />,
