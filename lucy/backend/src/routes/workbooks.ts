@@ -48,7 +48,7 @@ router.post('/delete-workbook', async (req: AuthRequest, res: Response): Promise
 })
 
 router.post('/generate-pic', async (req: AuthRequest, res: Response): Promise<void> => {
-    const { workbook, picName }: { workbook: WorkbookType; picName: string } = req.body
+    const { imageFilename, workbook }: { imageFilename: string; workbook: WorkbookType } = req.body
     const slug = req.user!.slug
 
     const focusedPrompt = workbook.prompts.find(p => p.focused)
@@ -62,28 +62,29 @@ router.post('/generate-pic', async (req: AuthRequest, res: Response): Promise<vo
             config: { numberOfImages: 1 },
         })
 
-        const imageData = result.generatedImages?.[0]?.image?.imageBytes
-        if (!imageData) {
+        const encodedImage = result.generatedImages?.[0]?.image?.imageBytes
+        const mimeType = result.generatedImages?.[0]?.image?.mimeType ?? 'image/png'
+
+        if (!encodedImage) {
             res.status(500).json({ error: 'No image returned from Gemini' })
             return
         }
 
-        const buffer = Buffer.from(imageData, 'base64')
-        writePicFile(slug, workbook.workbookName, picName, buffer)
+        writePicFile(slug, workbook.workbookName, imageFilename, Buffer.from(encodedImage, 'base64'))
 
         const newPic: PicType = {
             createdAt: Date.now(),
-            filename: picName,
-            mimeType: 'image/png',
+            filename: imageFilename,
+            mimeType,
         }
 
         const updatedWorkbook: WorkbookType = {
             ...workbook,
-            pics: [...workbook.pics.filter(p => p.filename !== picName), newPic],
+            pics: [...workbook.pics.filter(p => p.filename !== imageFilename), newPic],
         }
         writeWorkbook(slug, updatedWorkbook)
 
-        res.json({ workbook: updatedWorkbook, encodedImage: imageData })
+        res.json({ encodedImage, mimeType, workbook: updatedWorkbook })
     } catch (err) {
         console.error('generate-pic error:', err)
         res.status(500).json({ error: String(err) })
@@ -96,7 +97,7 @@ router.get('/get-workbook', async (req: AuthRequest, res: Response): Promise<voi
     try {
         const workbook = readWorkbook(slug, workbookName)
         res.json({ workbook })
-    } catch (err) {
+    } catch {
         res.status(404).json({ error: 'Workbook not found' })
     }
 })

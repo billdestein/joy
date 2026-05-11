@@ -115,18 +115,20 @@ Endpoint: /v1/workbooks/delete-workbook (POST)
 
 Endpoint: /v1/workbooks/generate-pic (POST)
   - Input:
-    - workbook: WorkbookType
     - imageFilename
+    - workbook: WorkbookType
   - Processing:
     - Use @google/genai": "^1.50.0"
     - Use model imagen-4.0-generate-001
     - Call Gemini passing the focused prompt
     - Wrap the Gemini call in try/catch; on error, log the error and return status 500 with the error message
-    - Put the resulting image in a file named imageFilename
-    - Add a pic to the workbook
+    - Get the encodedImage from the response
+    - Get the mimeType from the response
+    - Write the encodedImage to a file named imageFilename
+    - Create a PicType object
+    - Push the PicType onto the workbook's pics array
   - Output
-    - workbook
-    - encoded image (a base64-encoded image)
+    - A JSON object with these properties:  workbook, encodedImage, mimeType
 
 Endpoint: /v1/workbooks/get-workbook (GET)
   - Input:

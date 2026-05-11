@@ -5,7 +5,7 @@ import { WorkbookType } from '@billdestein/joy-common'
 
 type Props = {
     workbook: WorkbookType
-    onWorkbookUpdate: (workbook: WorkbookType, encodedImage: string, mimeType: string) => void
+    onWorkbookUpdate: (workbook: WorkbookType) => void
     onGenerating: (generating: boolean) => void
 }
 
