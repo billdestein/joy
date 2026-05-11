@@ -9,6 +9,7 @@ import * as api from '../api'
 type Props = {
     workbook: WorkbookType
     onWorkbookUpdate: (workbook: WorkbookType) => void
+    onImageUpdate: (encodedImage: string, mimeType: string) => void
     editorRef: React.MutableRefObject<import('monaco-editor').editor.IStandaloneCodeEditor | null>
     onGenerating: (generating: boolean) => void
 }
@@ -30,7 +31,7 @@ function parsePrompt(rawText: string): { picName: string | null; cleanText: stri
     return { picName, cleanText: cleanLines.join('\n').trim() }
 }
 
-export default function ComposerButtonRowComponent({ workbook, onWorkbookUpdate, editorRef, onGenerating }: Props) {
+export default function ComposerButtonRowComponent({ workbook, onWorkbookUpdate, onImageUpdate, editorRef, onGenerating }: Props) {
     function previousPrompt() {
         alert('previousPrompt')
     }
@@ -55,6 +56,7 @@ export default function ComposerButtonRowComponent({ workbook, onWorkbookUpdate,
         try {
             const result = await api.generatePic(updatedWorkbook, imageFilename)
             onWorkbookUpdate(result.workbook)
+            onImageUpdate(result.encodedImage, result.mimeType)
         } finally {
             onGenerating(false)
         }

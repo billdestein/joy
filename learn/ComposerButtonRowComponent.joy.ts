@@ -41,5 +41,7 @@ The runPrompt function:
   using a modal frame.
 - Finally, the runPrompt function makes an API call to the backend's generate-pic 
   endpoint, passing the workbook and the imageFilename.  
+- The encodedImage and mimeType in the response are used to refresh the 
+  ViewerComponent.
 
 `

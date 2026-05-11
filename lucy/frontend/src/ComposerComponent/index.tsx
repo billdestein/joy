@@ -6,10 +6,11 @@ import { WorkbookType } from '@billdestein/joy-common'
 type Props = {
     workbook: WorkbookType
     onWorkbookUpdate: (workbook: WorkbookType) => void
+    onImageUpdate: (encodedImage: string, mimeType: string) => void
     onGenerating: (generating: boolean) => void
 }
 
-export default function ComposerComponent({ workbook, onWorkbookUpdate, onGenerating }: Props) {
+export default function ComposerComponent({ workbook, onWorkbookUpdate, onImageUpdate, onGenerating }: Props) {
     const editorRef = useRef<import('monaco-editor').editor.IStandaloneCodeEditor | null>(null)
 
     const focusedPrompt = workbook.prompts.find(p => p.focused)
@@ -25,6 +26,7 @@ export default function ComposerComponent({ workbook, onWorkbookUpdate, onGenera
             <ComposerButtonRowComponent
                 workbook={workbook}
                 onWorkbookUpdate={onWorkbookUpdate}
+                onImageUpdate={onImageUpdate}
                 editorRef={editorRef}
                 onGenerating={onGenerating}
             />
