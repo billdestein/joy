@@ -3,7 +3,6 @@ import { bringToFront, getCanvasEl } from './Canvas'
 
 const BORDER = 5
 const RESIZE_ZONE = 10
-const MIN_VISIBLE = 40
 
 type Props = {
     frameId: number
@@ -104,7 +103,7 @@ export default function Frame({
                 const headerH = header!.offsetHeight + BORDER
 
                 newT = Math.max(0, Math.min(newT, canvasH - headerH))
-                newL = Math.max(MIN_VISIBLE - frameW, Math.min(newL, canvasW - MIN_VISIBLE))
+                newL = Math.max(30 - frameW, Math.min(newL, canvasW - 30))
 
                 outer.style.left = `${newL}px`
                 outer.style.top = `${newT}px`

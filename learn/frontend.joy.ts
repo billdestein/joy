@@ -56,4 +56,21 @@ aws.cognito.signin.user.admin scope, which is not granted under 'openid email'.
 The Cognito app client must have http://localhost:5173 registered as an allowed callback URL
 for local development.
 
+The redirect_uri in both the authorization request and the token exchange must be exactly
+window.location.origin (e.g. http://localhost:5173) — no path suffix like '/callback'.
+Cognito rejects any redirect_uri that doesn't exactly match a registered callback URL.
+
+The Vite dev server must proxy /v1 to the backend so that relative API calls reach Express
+on port 8080. Add this to vite.config.ts:
+
+    server: {
+        port: 5173,
+        proxy: {
+            '/v1': 'http://localhost:8080',
+        },
+    }
+
+Without this proxy, all fetch('/v1/...') calls from the frontend hit Vite on port 5173
+instead of the backend, and silently fail.
+
 `

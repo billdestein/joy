@@ -30,6 +30,12 @@ ago, or xxx hours ago, or xxx minutes ago.
 
 Columns 1 and 2 are sortable.  Column 3 is not.
 
+The AG Grid row data is NOT a WorkbookType. Each row object has the shape:
+{ name, lastModifiedISO, lastModifiedAgo, _wb: WorkbookType }
+where _wb holds the original WorkbookType. When the context menu needs the WorkbookType
+(e.g. to pass to an API call or to open a WorkbookFrame), always read rowNode.data._wb —
+do not cast rowNode.data directly as WorkbookType, as it does not have a workbookName property.
+
 Each row has a context menu.  The context menu is implemented from scratch.  It does not
 use AG Grids context menu features.  When the user right clicks on a row, the context menu
 pops up, with its uper left corner at the cursor position when the click event happened.

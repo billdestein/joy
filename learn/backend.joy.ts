@@ -20,6 +20,13 @@ Before starting the server, the startup script must build the common package by 
 'npm run build' in the lucy/common directory. The common package is a TypeScript source-only
 package and ts-node cannot resolve it unless its dist/ directory exists.
 
+The startup script must capture its own directory as an absolute path before any cd commands:
+
+    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+Then use $SCRIPT_DIR for all subsequent path references. If you use $(dirname "$0") lazily
+after a cd, it resolves relative to the changed directory and points to the wrong place.
+
 When running in local mode, the startup script reads the file ~/lucy-config/BackendLocalConfig.json.
 When running in prod mode, the startup script reads the file ~/lucy-config/BackendProdConfig.json.
 

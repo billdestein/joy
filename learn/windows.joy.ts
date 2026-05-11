@@ -78,14 +78,29 @@ horizontally and vertically. Its x and y props are ignored. Its z-index value is
 of the click catcher. When asked to remove the modal frame, the canvas also removes the click catcher 
 div from the DOM.
 
-All dragging, resizing and restacking is done through direct DOM manipulation.  We don't want mouse gestures on 
+All dragging, resizing and restacking is done through direct DOM manipulation.  We don't want mouse gestures on
 one Frame to cause React to rerender other frames.  Each frame keeps track if its own x, y, height, width and z-index.
+
+The canvas div is position:relative. Each frame's outer div is position:absolute within the canvas.
+
+The Canvas creates one plain unpositioned div (frameEl) per frame, purely as a ReactDOM.createRoot mount point.
+frameEl must have no position, left, or top — it is invisible infrastructure. All positioning and z-index live
+on the outer div inside the Frame component. This keeps each frame in its own React tree (so dragging one frame
+does not re-render others) while ensuring outer.offsetLeft and outer.offsetTop are canvas-relative, which is
+required for correct drag bounds checking.
 
 The frame can only be moved up to the point where the top of the frame touches the top of the canvas.
 
-When moving a frame left and right, they will be clipped by the canvas, but never revealing less than 40 pixels.
+A frame can be dragged upward but only until the top of the frame touches the bottom of the MainMenu.
 
-The frame can only be move down to the point where the bottom of the header touches the bottom of the canvas.
+A frame can be dragged downward but only until the bottom of the frame header touches the top of
+the viewport.
+
+A frame can be dragged left but only until the right edge of the frame is 30 pixels from the 
+left side of the viewport.
+
+A frame can be dragged right but only until the left edge of the frame is 30 pixels from the
+right side of the viewport.
 
 `
 
