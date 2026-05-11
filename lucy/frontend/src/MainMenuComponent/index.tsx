@@ -1,6 +1,7 @@
 import React from 'react'
 import { addFrame } from '../Frames'
 import WorkbookListFrame from '../WorkbookListFrame'
+import { signOut } from '../auth'
 
 export default function MainMenuComponent() {
     function openWorkbooks() {
@@ -20,23 +21,25 @@ export default function MainMenuComponent() {
             display: 'flex',
             alignItems: 'center',
             padding: '0 10px',
-            gap: '8px',
             flexShrink: 0,
         }}>
-            <button
-                onClick={openWorkbooks}
-                style={{
-                    background: '#2a2a4a',
-                    border: '1px solid #444',
-                    color: '#ccc',
-                    padding: '4px 14px',
-                    cursor: 'pointer',
-                    borderRadius: '3px',
-                    fontSize: '13px',
-                }}
-            >
+            <button onClick={openWorkbooks} style={btnStyle}>
                 Workbooks
+            </button>
+            <div style={{ flex: 1 }} />
+            <button onClick={signOut} style={btnStyle}>
+                Sign Out
             </button>
         </div>
     )
+}
+
+const btnStyle: React.CSSProperties = {
+    background: '#2a2a4a',
+    border: '1px solid #444',
+    color: '#ccc',
+    padding: '4px 14px',
+    cursor: 'pointer',
+    borderRadius: '3px',
+    fontSize: '13px',
 }

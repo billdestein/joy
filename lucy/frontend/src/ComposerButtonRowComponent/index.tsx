@@ -2,6 +2,8 @@ import React from 'react'
 import ComposerButtonComponent from '../ComposerButtonComponent'
 import { ButtonIcons } from '../ButtonIcons'
 import { WorkbookType, PromptType } from '@billdestein/joy-common'
+import { addFrame } from '../Frames'
+import GetWorkbookNameFrame from '../GetWorkbookNameFrame'
 import * as api from '../api'
 
 type Props = {
@@ -9,6 +11,23 @@ type Props = {
     onWorkbookUpdate: (workbook: WorkbookType, encodedImage: string, mimeType: string) => void
     editorRef: React.MutableRefObject<import('monaco-editor').editor.IStandaloneCodeEditor | null>
     onGenerating: (generating: boolean) => void
+}
+
+function parsePrompt(rawText: string): { picName: string | null; cleanText: string } {
+    let picName: string | null = null
+    const cleanLines: string[] = []
+
+    for (const line of rawText.split('\n')) {
+        const trimmed = line.trimStart()
+        if (trimmed.startsWith('//')) continue
+        if (trimmed.startsWith('-- save as ')) {
+            picName = trimmed.slice('-- save as '.length).trim().replace(/[.,;:!?'")\]]+$/, '')
+            continue
+        }
+        cleanLines.push(line)
+    }
+
+    return { picName, cleanText: cleanLines.join('\n').trim() }
 }
 
 export default function ComposerButtonRowComponent({ workbook, onWorkbookUpdate, editorRef, onGenerating }: Props) {
@@ -20,27 +39,47 @@ export default function ComposerButtonRowComponent({ workbook, onWorkbookUpdate,
         alert('nextPrompt')
     }
 
-    async function runPrompt() {
-        const text = editorRef.current?.getValue() ?? ''
+    async function doGenerate(cleanText: string, picName: string, currentWorkbook: WorkbookType) {
         const newPrompt: PromptType = {
             createdAt: Date.now(),
             focused: true,
-            text,
+            text: cleanText,
         }
         const updatedPrompts = [
-            ...workbook.prompts.map(p => ({ ...p, focused: false })),
+            ...currentWorkbook.prompts.map(p => ({ ...p, focused: false })),
             newPrompt,
         ]
-        const updatedWorkbook: WorkbookType = { ...workbook, prompts: updatedPrompts }
+        const updatedWorkbook: WorkbookType = { ...currentWorkbook, prompts: updatedPrompts }
 
         onGenerating(true)
         try {
-            const result = await api.generatePic(updatedWorkbook)
-            const mimeType = result.workbook.pics.find(p => p.filename === 'unnamed')?.mimeType ?? 'image/png'
+            const result = await api.generatePic(updatedWorkbook, picName)
+            const mimeType = result.workbook.pics.find(p => p.filename === picName)?.mimeType ?? 'image/png'
             onWorkbookUpdate(result.workbook, result.encodedImage, mimeType)
         } finally {
             onGenerating(false)
         }
+    }
+
+    function runPrompt() {
+        const rawText = editorRef.current?.getValue() ?? ''
+        const { picName, cleanText } = parsePrompt(rawText)
+
+        if (!picName) {
+            addFrame(GetWorkbookNameFrame, {
+                width: 360,
+                height: 170,
+                isModal: true,
+                message: {
+                    title: 'Save Image As',
+                    promptText: 'Enter a name for the output image',
+                    onOk: (name: string) => { doGenerate(cleanText, name, workbook) },
+                },
+            })
+            return
+        }
+
+        doGenerate(cleanText, picName, workbook)
     }
 
     return (

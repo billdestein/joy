@@ -48,7 +48,7 @@ router.post('/delete-workbook', async (req: AuthRequest, res: Response): Promise
 })
 
 router.post('/generate-pic', async (req: AuthRequest, res: Response): Promise<void> => {
-    const { workbook }: { workbook: WorkbookType } = req.body
+    const { workbook, picName }: { workbook: WorkbookType; picName: string } = req.body
     const slug = req.user!.slug
 
     const focusedPrompt = workbook.prompts.find(p => p.focused)
@@ -69,18 +69,17 @@ router.post('/generate-pic', async (req: AuthRequest, res: Response): Promise<vo
         }
 
         const buffer = Buffer.from(imageData, 'base64')
-        writePicFile(slug, workbook.workbookName, 'unnamed', buffer)
+        writePicFile(slug, workbook.workbookName, picName, buffer)
 
         const newPic: PicType = {
             createdAt: Date.now(),
-            filename: 'unnamed',
+            filename: picName,
             mimeType: 'image/png',
         }
 
-        const existingPics = workbook.pics.filter(p => p.filename !== 'unnamed')
         const updatedWorkbook: WorkbookType = {
             ...workbook,
-            pics: [...existingPics, newPic],
+            pics: [...workbook.pics.filter(p => p.filename !== picName), newPic],
         }
         writeWorkbook(slug, updatedWorkbook)
 
