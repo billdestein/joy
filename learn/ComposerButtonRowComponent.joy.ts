@@ -69,5 +69,8 @@ The runButtonHandler function:
 - The refresh function pulls images from the backend that are referenced in the
   workbook but do not exist in the cache.
 - The PicListComponent and the ViewerComponent are refreshed.
+- A new empty prompt is pushed onto the workbook's array of prompts.
+- The rightmost prompt is marked focused, all other prompts are marked not focused.
+- The ComposerComponent is rerendered.
 
 `
