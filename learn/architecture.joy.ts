@@ -14,7 +14,7 @@ The mono-repo will have these sub-repos:
     - frontend
     - frames-test
 
-The frontend code will use Vite, Typescript and React.
+The frontend code will use Vite, Typescript, idb-keyval, and React.
 
 The backend code will use Typescript, Node, Express and AWS Cognito.
 
@@ -44,5 +44,11 @@ Under the user's directory is a directory for each of the user's workbooks.  THe
 
 Each workbook directory has a single workbook.json file, and some number of image files.
 
+The frontend uses idb-keyval to cache images and prevent sending across the network multiple times.
+
+The keys for idb-keyval look like '/workbook.workbookName/pic.filename/pic.mimeType/pic.createdAt'
+
 Initially, Lucy supports jpeg and png image files.
+
+
 `

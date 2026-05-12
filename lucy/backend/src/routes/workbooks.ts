@@ -8,9 +8,10 @@ import {
     listWorkbooks,
     deleteWorkbook,
     deletePicFile,
-    renamePicFile,
     writePicFile,
+    picPath,
 } from '../fileSystem'
+import * as fs from 'fs'
 
 const router = Router()
 
@@ -74,20 +75,34 @@ router.post('/generate-pic', async (req: AuthRequest, res: Response): Promise<vo
 
         const newPic: PicType = {
             createdAt: Date.now(),
+            encodedImage: '',
             filename: imageFilename,
             mimeType,
         }
 
-        const updatedWorkbook: WorkbookType = {
-            ...workbook,
-            pics: [...workbook.pics.filter(p => p.filename !== imageFilename), newPic],
-        }
-        writeWorkbook(slug, updatedWorkbook)
+        const otherPics = workbook.pics.filter(p => p.filename !== imageFilename)
+        const savedWorkbook: WorkbookType = { ...workbook, pics: [...otherPics, newPic] }
+        writeWorkbook(slug, savedWorkbook)
 
-        res.json({ encodedImage, mimeType, workbook: updatedWorkbook })
+        res.json({ workbook: savedWorkbook })
     } catch (err) {
         console.error('generate-pic error:', err)
         res.status(500).json({ error: String(err) })
+    }
+})
+
+router.get('/get-pic', async (req: AuthRequest, res: Response): Promise<void> => {
+    const workbookName = req.query.workbookName as string
+    const picFilename = req.query.picFilename as string
+    const slug = req.user!.slug
+    try {
+        const filePath = picPath(slug, workbookName, picFilename)
+        const data = fs.readFileSync(filePath)
+        const encodedImage = data.toString('base64')
+        res.json({ encodedImage })
+    } catch (err) {
+        console.error('get-pic error:', err)
+        res.status(404).json({ error: 'Pic not found' })
     }
 })
 
@@ -106,22 +121,6 @@ router.get('/list-workbooks', async (req: AuthRequest, res: Response): Promise<v
     const slug = req.user!.slug
     const workbooks = listWorkbooks(slug)
     res.json({ workbooks })
-})
-
-router.post('/rename-pic', async (req: AuthRequest, res: Response): Promise<void> => {
-    const { workbook, newPicName }: { workbook: WorkbookType; newPicName: string } = req.body
-    const slug = req.user!.slug
-
-    renamePicFile(slug, workbook.workbookName, 'unnamed', newPicName)
-
-    const updatedWorkbook: WorkbookType = {
-        ...workbook,
-        pics: workbook.pics.map(p =>
-            p.filename === 'unnamed' ? { ...p, filename: newPicName } : p
-        ),
-    }
-    writeWorkbook(slug, updatedWorkbook)
-    res.status(200).end()
 })
 
 export default router

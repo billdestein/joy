@@ -89,9 +89,7 @@ on the outer div inside the Frame component. This keeps each frame in its own Re
 does not re-render others) while ensuring outer.offsetLeft and outer.offsetTop are canvas-relative, which is
 required for correct drag bounds checking.
 
-The frame can only be moved up to the point where the top of the frame touches the top of the canvas.
-
-A frame can be dragged upward but only until the top of the frame touches the bottom of the MainMenu.
+A frame can be dragged upward but only until the top of the frame touches the top of the canvas.
 
 A frame can be dragged downward but only until the bottom of the frame header touches the top of
 the viewport.

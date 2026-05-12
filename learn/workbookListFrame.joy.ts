@@ -5,7 +5,7 @@ export const workbookListFrame = `
 
 The WorkbookListFrame is a React component that wraps Frame.
 
-At initialization, a WorkbookListWidget calls the list-workbooks endpoint on the backend servver.
+At initialization, a WorkbookListWidget calls the list-workbooks endpoint on the backend server.
 
 The WorkbookListWidget has an AG Grid React that fills the frame body.
 
@@ -56,7 +56,7 @@ The "Download workbook" option stringifies the workbook with an indent of four,
 and downloads it as workbook.lucy.
 
 The "Open workbook" calls canvas.addFrame to add the WorkbookFrame.
-The selected workbook name is passed as a prop to the WorkbookFrane.
+The selected workbook name is passed as a prop to the WorkbookFrame.
 
 The frame has these three FrameHeaderButtonComponents right-aligned in the header:  
 
@@ -80,12 +80,10 @@ The frame has these three FrameHeaderButtonComponents right-aligned in the heade
 
 The surrounding frame has the string 'Workbooks' left-aligned in the header.
 
-The addWorkbookNandler function creates an instance of the GetWorkbookNameFrame.  The
-GetWorkbookNameFrame calls it's callback function with a name for the new workbook.
-The callback function then makes an API call to the backend's create-workbook endpoint.
+The addWorkbookHandler uses PromptFrame with prompt "Enter a name for your new workbook",
+and then makes an API call to the backend's create-workbook endpoint.
 
-
-The uploaWorkbook function creates an instance of the UploadWorkbookFrame.  The 
+The uploadWorkbook function creates an instance of the UploadWorkbookFrame.  The 
 UploadWorkbookFrame calls its callback function when complete.  The callback
 function refreshes the grid.
 

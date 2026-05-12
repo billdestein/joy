@@ -1,13 +1,13 @@
 //----------------------------------------------------------------------------------------------------
-// getWorkbookNameFrame
+// promptFrame
 //----------------------------------------------------------------------------------------------------
-export const getWorkbookNameFrame = `
+export const promptFrame = `
 
-The GetWorkbookNameFrame is a React component that wraps Frame.
+The PromptFrame is a React component that wraps Frame.
 
-The frame viewport has a text input field.
+The PromptFrame has a 'prompt' prop.  The prompt is displayed in the viewport.
 
-A string "Enter a name for the new workbook",
+The frame viewport also has a text input field.
 
 And an ok button and a cancel button.
 

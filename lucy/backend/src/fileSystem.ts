@@ -24,13 +24,18 @@ function workbookJsonPath(slug: string, workbookName: string): string {
 
 export function readWorkbook(slug: string, workbookName: string): WorkbookType {
     const raw = fs.readFileSync(workbookJsonPath(slug, workbookName), 'utf8')
-    return JSON.parse(raw) as WorkbookType
+    const wb = JSON.parse(raw) as WorkbookType
+    return { ...wb, pics: wb.pics.map(p => ({ ...p, encodedImage: p.encodedImage ?? '' })) }
 }
 
 export function writeWorkbook(slug: string, workbook: WorkbookType): void {
     const dir = workbookDir(slug, workbook.workbookName)
     fs.mkdirSync(dir, { recursive: true })
-    fs.writeFileSync(workbookJsonPath(slug, workbook.workbookName), JSON.stringify(workbook, null, 2))
+    const clean: WorkbookType = {
+        ...workbook,
+        pics: workbook.pics.map(p => ({ ...p, encodedImage: '' })),
+    }
+    fs.writeFileSync(workbookJsonPath(slug, workbook.workbookName), JSON.stringify(clean, null, 2))
 }
 
 export function listWorkbooks(slug: string): WorkbookType[] {

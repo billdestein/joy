@@ -1,11 +1,11 @@
 export type UserType = {
     email: string
     slug: string
-    workbooks: WorkbookType[]
 }
 
 export type PicType = {
     createdAt: number
+    encodedImage: string
     filename: string
     mimeType: string
 }

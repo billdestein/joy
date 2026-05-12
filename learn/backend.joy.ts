@@ -46,13 +46,13 @@ The backend server listens on port 8080.
 
 The backend code has a map of email to User object.
 
-The user object has only two properties:
+The user object has these properties:
     - email: string
     - slug: string
 
 All of the this happens in the login endpoint:
-- The login endpoint receives an authorization header that contains the Cognito access token.  
-- The backend calls Cognito to validate the access token and to get the user's email.  
+- The login endpoint receives an authorization header that contains the Cognito ID token.
+- The backend calls Cognito to validate the ID token and to get the user's email.  
 - The backend then creates a User object if it does not already exist.
 - The backend computes a random session ID
 - A <session ID, email> pair is set in Redis with a one-hour TTL
@@ -71,7 +71,7 @@ Endpoint: /v1/auth/login (POST)
       scope which is not present on the access token when using 'openid email' scope.
     - Compute a random session id
     - Store the session in an HTTP-only cookie
-    - Create a User object with the session id and email.
+    - Create a User object with the email and slug.
     - Create the newly logged-in user's directory if it does not exist: MOUNT_DIR/users/{slug}
   - Output
     - None
@@ -128,7 +128,16 @@ Endpoint: /v1/workbooks/generate-pic (POST)
     - Create a PicType object
     - Push the PicType onto the workbook's pics array
   - Output
-    - A JSON object with these properties:  workbook, encodedImage, mimeType
+    - workbook
+
+Endpoint: /v1/workbooks/get-pic (GET)
+  - Input:
+    - workbookName: string (passed as a query param)
+    - picFilename: string (passed as a query param)
+  - Processing
+    - Find and read the encodedImage in file:  MOUNT_DIR/users/{slug}/workbooks/{workbookName}/{picFilename}
+  - Output:
+    - encodedImage
 
 Endpoint: /v1/workbooks/get-workbook (GET)
   - Input:
@@ -146,17 +155,6 @@ Endpoint: /v1/workbooks/list-workbooks (GET)
 - Output:
   - workbooks: WorkbookType[]
         
-Endpoint: /v1/workbooks/rename-pic (POST)
-The pic being renamed is always named 'unnamed', so it is not passed as an input.
-  - Input:
-    - workbook
-    - newPicName
-  - Processing:
-    - Rename pic file
-    - Rename pic within the workbook.json
-  - Output
-    - None
-
 Some miscellaneous stuff:
 
 The backend uses the standard redis client library -- not ioredis

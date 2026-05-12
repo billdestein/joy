@@ -27,21 +27,31 @@ The previousPrompt function simply does alert('previousPrompt')
 
 The nextPrompt function simply does alert('nextPrompt')
 
-The runPrompt function:
+Some details on prompts, comments and commands:
 
 - A prompt is free form text with a few exceptions.
-- Lines beginning with '//' are comments and should be stripped from the
-  prompt by the runPrompt function.
+- Lines beginning with '//' are comments.
+- Comments are stripped from the prompt before sending the prompt to the backend.
 - Lines beginning with '--' are commands.
 - The '-- save as' command takes one argument -- the filename of the output image.
-- The runPrompt function extracts the filename from the -- save as command if it exists.
-- The runPrompt function removes any trailing punction from the filename if it exists.
-- The runprompt function strips all commands from the prompt.
-- if there is no filename at this point, the user is prompted for an image filename 
-  using a modal frame.
-- Finally, the runPrompt function makes an API call to the backend's generate-pic 
-  endpoint, passing the workbook and the imageFilename.  
-- The encodedImage and mimeType in the response are used to refresh the 
-  ViewerComponent.
+- The filename must be a valid Linux filename.
+- If the filename has trailing punctuation, the trailing punctuation is removed from the filename
+  before sending it to the backend.
+
+The runPrompt function:
+
+- Gets the prompt from the Monaco editor.
+- Extracts the imageFilename from the "-- save as" command.
+- If there is no "-- save as" command, uses PromptFrame with prompt "Enter a name for your new image"
+- Creates a PromptType object and pushes it onto the workbook's array of prompts.
+- Marks the new prompt as focused.  Marks all others as not focused.
+- Makes an API call to the backend's generate-pic endpoint, passing the workbook and the imageFilename.
+- The backend generates the image and writes it to the filesystem.
+- The backend adds a PicType to the workbook's pics array.
+- The API response includes a workbook.
+- The workbook is passed to the Cache's refresh function.
+- The refresh function pulls images from the backend that are referenced in the
+  workbook but do not exist in the cache.
+- The PicList and the Viewer are refreshed.
 
 `

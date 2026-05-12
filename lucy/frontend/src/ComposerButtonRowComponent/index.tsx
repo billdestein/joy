@@ -3,13 +3,13 @@ import ComposerButtonComponent from '../ComposerButtonComponent'
 import { ButtonIcons } from '../ButtonIcons'
 import { WorkbookType, PromptType } from '@billdestein/joy-common'
 import { addFrame } from '../Frames'
-import GetWorkbookNameFrame from '../GetWorkbookNameFrame'
+import PromptFrame from '../PromptFrame'
 import * as api from '../api'
+import * as Cache from '../Cache'
 
 type Props = {
     workbook: WorkbookType
     onWorkbookUpdate: (workbook: WorkbookType) => void
-    onImageUpdate: (encodedImage: string, mimeType: string) => void
     editorRef: React.MutableRefObject<import('monaco-editor').editor.IStandaloneCodeEditor | null>
     onGenerating: (generating: boolean) => void
 }
@@ -31,7 +31,7 @@ function parsePrompt(rawText: string): { picName: string | null; cleanText: stri
     return { picName, cleanText: cleanLines.join('\n').trim() }
 }
 
-export default function ComposerButtonRowComponent({ workbook, onWorkbookUpdate, onImageUpdate, editorRef, onGenerating }: Props) {
+export default function ComposerButtonRowComponent({ workbook, onWorkbookUpdate, editorRef, onGenerating }: Props) {
     function previousPrompt() {
         alert('previousPrompt')
     }
@@ -55,8 +55,8 @@ export default function ComposerButtonRowComponent({ workbook, onWorkbookUpdate,
         onGenerating(true)
         try {
             const result = await api.generatePic(updatedWorkbook, imageFilename)
-            onWorkbookUpdate(result.workbook)
-            onImageUpdate(result.encodedImage, result.mimeType)
+            const refreshed = await Cache.refresh(result.workbook)
+            onWorkbookUpdate(refreshed)
         } finally {
             onGenerating(false)
         }
@@ -67,13 +67,12 @@ export default function ComposerButtonRowComponent({ workbook, onWorkbookUpdate,
         const { picName, cleanText } = parsePrompt(rawText)
 
         if (!picName) {
-            addFrame(GetWorkbookNameFrame, {
+            addFrame(PromptFrame, {
                 width: 360,
                 height: 170,
                 isModal: true,
                 message: {
-                    title: 'Save Image As',
-                    promptText: 'Enter a name for the output image',
+                    prompt: 'Enter a name for your new image',
                     onOk: (name: string) => { doGenerate(cleanText, name, workbook) },
                 },
             })
@@ -81,7 +80,6 @@ export default function ComposerButtonRowComponent({ workbook, onWorkbookUpdate,
         }
 
         doGenerate(cleanText, picName, workbook)
-
     }
 
     return (
