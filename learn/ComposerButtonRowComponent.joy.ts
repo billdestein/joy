@@ -24,8 +24,8 @@ The next button is:
     Handler: nextButtonHandler (see details below)
 }
 
-{index} is the offset of the currently visible (focused) prompt within the workbook's
-prompts array.
+{index} is one plus the index of the currently visible (focused) prompt within the workbook's
+prompts.
 
 {count} is the number of prompts in the workbook's prompts array.
 
@@ -61,7 +61,7 @@ The runButtonHandler function:
 - If there is no "-- save as" command, uses PromptFrame with prompt "Enter a name for your new image"
 - Creates a PromptType object and pushes it onto the workbook's array of prompts.
 - Marks the new prompt as focused.  Marks all others as not focused.
-- Makes an API call to the backend's generate-pic endpoint, passing the workbook and the imageFilename.
+- For each PicType in the workbook, sets the encodedImage to the empty string.
 - The backend generates the image and writes it to the filesystem.
 - The backend adds a PicType to the workbook's pics array.
 - The API response includes a workbook.

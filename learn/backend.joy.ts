@@ -89,7 +89,7 @@ Endpoint: /v1/workbooks/create-workbook (POST)
   - workbookName: string
 - Processing:
   - Create a new directory for the workbook in the user's 'workbooks' directory.
-  - Create a WorkbookType object with name and createdAt, but no pics and no prompts
+  - Create a WorkbookType object with name and createdAt, and a single prompt with empty text, but no pics
   - Stringify the WorkbookType object and save it in a file named workbook.json
 - Output:
   - None
