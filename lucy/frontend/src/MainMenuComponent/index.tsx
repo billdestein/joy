@@ -1,45 +1,38 @@
 import React from 'react'
 import { addFrame } from '../Frames'
-import WorkbookListFrame from '../WorkbookListFrame'
 import { signOut } from '../auth'
 
-export default function MainMenuComponent() {
-    function openWorkbooks() {
-        addFrame(WorkbookListFrame, {
-            width: 700,
-            height: 400,
-            isModal: false,
-            message: null,
-        })
+export function MainMenuComponent() {
+    async function handleWorkbooks() {
+        const { WorkbookListFrame } = await import('../WorkbookListFrame')
+        addFrame(WorkbookListFrame, {})
     }
 
     return (
         <div style={{
-            width: '100%',
-            height: '40px',
-            background: '#1a1a2e',
             display: 'flex',
             alignItems: 'center',
-            padding: '0 10px',
+            justifyContent: 'space-between',
+            width: '100%',
+            background: '#1a1a2e',
+            borderBottom: '1px solid #333',
+            padding: '4px 12px',
+            boxSizing: 'border-box',
             flexShrink: 0,
         }}>
-            <button onClick={openWorkbooks} style={btnStyle}>
-                Workbooks
-            </button>
-            <div style={{ flex: 1 }} />
-            <button onClick={signOut} style={btnStyle}>
-                Sign Out
-            </button>
+            <button onClick={handleWorkbooks} style={menuBtnStyle}>Workbooks</button>
+            <button onClick={signOut} style={menuBtnStyle}>Sign Out</button>
         </div>
     )
 }
 
-const btnStyle: React.CSSProperties = {
-    background: '#2a2a4a',
+const menuBtnStyle: React.CSSProperties = {
+    background: 'transparent',
     border: '1px solid #444',
     color: '#ccc',
     padding: '4px 14px',
+    borderRadius: 3,
     cursor: 'pointer',
-    borderRadius: '3px',
-    fontSize: '13px',
+    fontSize: 13,
+    fontFamily: 'sans-serif',
 }

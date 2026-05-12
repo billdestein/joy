@@ -1,81 +1,76 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { initCanvas } from './Frames'
-import MainMenuComponent from './MainMenuComponent'
-import { startLogin, handleCallback, getStoredToken } from './auth'
+import { MainMenuComponent } from './MainMenuComponent'
+import { startSignIn, handleCallback, getStoredIdToken } from './auth'
 
 type AuthState = 'loading' | 'unauthenticated' | 'authenticated'
 
-export default function App() {
-    const [authState, setAuthState] = useState<AuthState>('loading')
+export function App() {
     const canvasRef = useRef<HTMLDivElement>(null)
-    const canvasInited = useRef(false)
+    const [authState, setAuthState] = useState<AuthState>('loading')
 
     useEffect(() => {
         async function init() {
-            const isCallback = window.location.search.includes('code=') && window.location.search.includes('state=')
-            if (isCallback) {
-                const ok = await handleCallback()
-                if (ok) {
-                    setAuthState('authenticated')
-                    return
-                }
+            const params = new URLSearchParams(window.location.search)
+            const code = params.get('code')
+            const state = params.get('state')
+
+            if (code && state) {
+                const ok = await handleCallback(code, state)
+                history.replaceState(null, '', window.location.origin)
+                setAuthState(ok ? 'authenticated' : 'unauthenticated')
+                return
             }
-            const token = getStoredToken()
+
+            const token = getStoredIdToken()
             setAuthState(token ? 'authenticated' : 'unauthenticated')
         }
         init()
     }, [])
 
     useEffect(() => {
-        if (authState === 'authenticated' && canvasRef.current && !canvasInited.current) {
+        if (authState === 'authenticated' && canvasRef.current) {
             initCanvas(canvasRef.current)
-            canvasInited.current = true
         }
     }, [authState])
 
     if (authState === 'loading') {
         return (
-            <div style={{ width: '100%', height: '100%', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ color: '#888', fontSize: '16px' }}>Loading...</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100vw', height: '100vh', background: '#000' }}>
+                <span style={{ color: 'gold', fontSize: 32, fontFamily: 'serif' }}>Lucy</span>
             </div>
         )
     }
 
     if (authState === 'unauthenticated') {
         return (
-            <div style={{
-                width: '100%',
-                height: '100%',
-                background: '#000',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-            }}>
-                <div style={{ color: 'gold', fontSize: '48px', fontWeight: 'bold', letterSpacing: '8px' }}>Lucy</div>
-                <button
-                    onClick={startLogin}
-                    style={{
-                        position: 'absolute',
-                        top: '16px',
-                        right: '20px',
-                        background: '#1a1a3a',
-                        border: '1px solid #555',
-                        color: '#ccc',
-                        padding: '6px 18px',
-                        cursor: 'pointer',
-                        borderRadius: '4px',
-                        fontSize: '14px',
-                    }}
-                >
-                    Sign In
-                </button>
+            <div style={{ position: 'relative', width: '100vw', height: '100vh', background: '#000' }}>
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ color: 'gold', fontSize: 48, fontFamily: 'serif' }}>Lucy</span>
+                </div>
+                <div style={{ position: 'absolute', top: 12, right: 12 }}>
+                    <button
+                        onClick={startSignIn}
+                        style={{
+                            background: 'transparent',
+                            border: '1px solid #888',
+                            color: '#ccc',
+                            padding: '6px 18px',
+                            borderRadius: 3,
+                            cursor: 'pointer',
+                            fontSize: 14,
+                            fontFamily: 'sans-serif',
+                        }}
+                    >
+                        Sign In
+                    </button>
+                </div>
             </div>
         )
     }
 
     return (
-        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', background: '#111' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', width: '100vw', height: '100vh', background: '#000' }}>
             <MainMenuComponent />
             <div
                 ref={canvasRef}

@@ -52,6 +52,6 @@ The runPrompt function:
 - The workbook is passed to the Cache's refresh function.
 - The refresh function pulls images from the backend that are referenced in the
   workbook but do not exist in the cache.
-- The PicList and the Viewer are refreshed.
+- The PicListComponent and the ViewerComponent are refreshed.
 
 `

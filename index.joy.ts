@@ -13,6 +13,7 @@ import { composerEditorComponent } from './learn/composerEditorComponent.joy.ts'
 import { frameHeaderButtonComponent } from './learn/frameHeaderButtonComponent.joy.ts'
 import { frontend } from './learn/frontend.joy.ts'
 import { mainMenuComponent } from './learn/mainMenu.joy.ts'
+import { picComponent } from './learn/picComponent.joy.ts'
 import { picListComponent } from './learn/picListComponent.joy.ts'
 import { promptFrame } from './learn/promptFrame.joy.ts'
 import { uploadWorkbookFrame } from './learn/uploadWorkbookFrame.joy.ts'
@@ -51,6 +52,8 @@ learn(frameHeaderButtonComponent)
 learn(frontend)
 
 learn(mainMenuComponent)
+
+learn(picComponent)
 
 learn(picListComponent)
 

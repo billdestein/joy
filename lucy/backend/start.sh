@@ -2,7 +2,8 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-MODE=${1:-local}
+
+MODE="${1:-local}"
 
 if [ "$MODE" = "prod" ]; then
     CONFIG_FILE=~/lucy-config/BackendProdConfig.json
@@ -18,8 +19,7 @@ export ORIGIN=$(jq -r '.ORIGIN' "$CONFIG_FILE")
 export REDIS_HOST=$(jq -r '.REDIS_HOST' "$CONFIG_FILE")
 export REDIS_PORT=$(jq -r '.REDIS_PORT' "$CONFIG_FILE")
 
-cd "$SCRIPT_DIR/../common"
-npm run build
+cd "$SCRIPT_DIR/../common" && npm run build
 
 cd "$SCRIPT_DIR"
 npx ts-node src/index.ts

@@ -1,44 +1,40 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 
-type Props = {
+interface Props {
     icon: React.ReactNode
     handler: () => void
     tooltipLabel: string
 }
 
-export default function FrameHeaderButtonComponent({ icon, handler, tooltipLabel }: Props) {
-    const [hovered, setHovered] = useState(false)
+export function FrameHeaderButtonComponent({ icon, handler, tooltipLabel }: Props) {
     const [showTooltip, setShowTooltip] = useState(false)
     const btnRef = useRef<HTMLButtonElement>(null)
-    const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 })
+    const [tooltipPos, setTooltipPos] = useState({ left: 0, top: 0 })
 
-    useEffect(() => {
-        if (showTooltip && btnRef.current) {
+    function handleMouseEnter() {
+        if (btnRef.current) {
             const rect = btnRef.current.getBoundingClientRect()
-            setTooltipPos({
-                top: rect.top - 28,
-                left: rect.left + rect.width / 2,
-            })
+            setTooltipPos({ left: rect.left + rect.width / 2, top: rect.top - 4 })
         }
-    }, [showTooltip])
+        setShowTooltip(true)
+    }
 
     return (
         <>
             <button
                 ref={btnRef}
-                onMouseEnter={() => { setHovered(true); setShowTooltip(true) }}
-                onMouseLeave={() => { setHovered(false); setShowTooltip(false) }}
                 onClick={handler}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={() => setShowTooltip(false)}
                 style={{
-                    background: hovered ? '#3a3a5c' : 'transparent',
+                    background: showTooltip ? '#444' : 'transparent',
                     border: 'none',
                     color: '#ccc',
                     cursor: 'pointer',
+                    padding: '2px 6px',
+                    borderRadius: 3,
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '4px',
-                    borderRadius: '3px',
                 }}
             >
                 {icon}
@@ -47,14 +43,14 @@ export default function FrameHeaderButtonComponent({ icon, handler, tooltipLabel
                 <div
                     style={{
                         position: 'fixed',
-                        top: tooltipPos.top,
                         left: tooltipPos.left,
-                        transform: 'translateX(-50%)',
-                        background: '#222',
+                        top: tooltipPos.top,
+                        transform: 'translate(-50%, -100%)',
+                        background: '#333',
                         color: '#eee',
-                        padding: '2px 8px',
-                        borderRadius: '3px',
-                        fontSize: '11px',
+                        padding: '3px 8px',
+                        borderRadius: 3,
+                        fontSize: 12,
                         whiteSpace: 'nowrap',
                         pointerEvents: 'none',
                         zIndex: 99999,

@@ -1,17 +1,17 @@
 import React from 'react'
+import { WorkbookType } from '@billdestein/joy-common'
+import { PicComponent } from '../PicComponent'
 
-export default function PicListComponent() {
+interface Props {
+    workbook: WorkbookType
+}
+
+export function PicListComponent({ workbook }: Props) {
     return (
-        <div style={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#888',
-            fontSize: '13px',
-        }}>
-            PicList
+        <div style={{ height: '100%', overflowY: 'auto', background: '#1e1e1e' }}>
+            {workbook.pics.map(pic => (
+                <PicComponent key={pic.filename} name={pic.filename} />
+            ))}
         </div>
     )
 }

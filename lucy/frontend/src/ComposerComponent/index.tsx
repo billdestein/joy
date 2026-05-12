@@ -1,32 +1,25 @@
-import React, { useRef } from 'react'
-import ComposerEditorComponent from '../ComposerEditorComponent'
-import ComposerButtonRowComponent from '../ComposerButtonRowComponent'
+import React, { useState } from 'react'
 import { WorkbookType } from '@billdestein/joy-common'
+import { ComposerEditorComponent } from '../ComposerEditorComponent'
+import { ComposerButtonRowComponent } from '../ComposerButtonRowComponent'
 
-type Props = {
+interface Props {
     workbook: WorkbookType
-    onWorkbookUpdate: (workbook: WorkbookType) => void
-    onGenerating: (generating: boolean) => void
+    onWorkbookChange: (wb: WorkbookType) => void
 }
 
-export default function ComposerComponent({ workbook, onWorkbookUpdate, onGenerating }: Props) {
-    const editorRef = useRef<import('monaco-editor').editor.IStandaloneCodeEditor | null>(null)
-
-    const focusedPrompt = workbook.prompts.find(p => p.focused)
+export function ComposerComponent({ workbook, onWorkbookChange }: Props) {
+    const [editorValue, setEditorValue] = useState('')
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div style={{ flex: 1, overflow: 'hidden' }}>
-                <ComposerEditorComponent
-                    editorRef={editorRef}
-                    initialText={focusedPrompt?.text ?? ''}
-                />
+                <ComposerEditorComponent value={editorValue} onChange={setEditorValue} />
             </div>
             <ComposerButtonRowComponent
+                editorValue={editorValue}
                 workbook={workbook}
-                onWorkbookUpdate={onWorkbookUpdate}
-                editorRef={editorRef}
-                onGenerating={onGenerating}
+                onWorkbookChange={onWorkbookChange}
             />
         </div>
     )

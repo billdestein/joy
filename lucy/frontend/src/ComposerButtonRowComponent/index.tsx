@@ -1,37 +1,39 @@
 import React from 'react'
-import ComposerButtonComponent from '../ComposerButtonComponent'
-import { ButtonIcons } from '../ButtonIcons'
 import { WorkbookType, PromptType } from '@billdestein/joy-common'
+import { ComposerButtonComponent } from '../ComposerButtonComponent'
+import { ButtonIcons } from '../ButtonIcons'
 import { addFrame } from '../Frames'
-import PromptFrame from '../PromptFrame'
-import * as api from '../api'
-import * as Cache from '../Cache'
+import { refresh } from '../cache'
 
-type Props = {
+interface Props {
+    editorValue: string
     workbook: WorkbookType
-    onWorkbookUpdate: (workbook: WorkbookType) => void
-    editorRef: React.MutableRefObject<import('monaco-editor').editor.IStandaloneCodeEditor | null>
-    onGenerating: (generating: boolean) => void
+    onWorkbookChange: (wb: WorkbookType) => void
 }
 
-function parsePrompt(rawText: string): { picName: string | null; cleanText: string } {
-    let picName: string | null = null
-    const cleanLines: string[] = []
+function stripComments(text: string): string {
+    return text
+        .split('\n')
+        .filter(line => !line.trimStart().startsWith('//'))
+        .join('\n')
+}
 
-    for (const line of rawText.split('\n')) {
-        const trimmed = line.trimStart()
-        if (trimmed.startsWith('//')) continue
-        if (trimmed.startsWith('-- save as ')) {
-            picName = trimmed.slice('-- save as '.length).trim().replace(/[.,;:!?'")\]]+$/, '')
-            continue
+function extractSaveAs(text: string): { filename: string | null; cleanedText: string } {
+    const lines = text.split('\n')
+    let filename: string | null = null
+    const remaining: string[] = []
+    for (const line of lines) {
+        const m = line.match(/^--\s*save\s+as\s+(.+)$/i)
+        if (m) {
+            filename = m[1].trim().replace(/[.,;:!?]+$/, '')
+        } else {
+            remaining.push(line)
         }
-        cleanLines.push(line)
     }
-
-    return { picName, cleanText: cleanLines.join('\n').trim() }
+    return { filename, cleanedText: remaining.join('\n') }
 }
 
-export default function ComposerButtonRowComponent({ workbook, onWorkbookUpdate, editorRef, onGenerating }: Props) {
+export function ComposerButtonRowComponent({ editorValue, workbook, onWorkbookChange }: Props) {
     function previousPrompt() {
         alert('previousPrompt')
     }
@@ -40,63 +42,85 @@ export default function ComposerButtonRowComponent({ workbook, onWorkbookUpdate,
         alert('nextPrompt')
     }
 
-    async function doGenerate(cleanText: string, imageFilename: string, currentWorkbook: WorkbookType) {
-        const newPrompt: PromptType = {
-            createdAt: Date.now(),
-            focused: true,
-            text: cleanText,
+    async function runPrompt() {
+        const stripped = stripComments(editorValue)
+        const { filename: extractedFilename, cleanedText } = extractSaveAs(stripped)
+
+        function doRun(imageFilename: string) {
+            const now = Date.now()
+            const newPrompt: PromptType = {
+                createdAt: now,
+                focused: true,
+                text: cleanedText.trim(),
+            }
+            const updatedPrompts = workbook.prompts.map(p => ({ ...p, focused: false }))
+            updatedPrompts.push(newPrompt)
+            const updatedWorkbook: WorkbookType = { ...workbook, prompts: updatedPrompts }
+
+            fetch('/v1/workbooks/generate-pic', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ imageFilename, workbook: updatedWorkbook }),
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error(`generate-pic failed: ${res.status}`)
+                    return res.json()
+                })
+                .then(async (data) => {
+                    const refreshed = await refresh(data.workbook as WorkbookType)
+                    onWorkbookChange(refreshed)
+                })
+                .catch(err => {
+                    console.error('generate-pic error:', err)
+                    alert(`Error generating image: ${err.message}`)
+                })
+
+            onWorkbookChange(updatedWorkbook)
         }
-        const updatedPrompts = [
-            ...currentWorkbook.prompts.map(p => ({ ...p, focused: false })),
-            newPrompt,
-        ]
-        const updatedWorkbook: WorkbookType = { ...currentWorkbook, prompts: updatedPrompts }
 
-        onGenerating(true)
-        try {
-            const result = await api.generatePic(updatedWorkbook, imageFilename)
-            const refreshed = await Cache.refresh(result.workbook)
-            onWorkbookUpdate(refreshed)
-        } finally {
-            onGenerating(false)
-        }
-    }
-
-    function runPrompt() {
-        const rawText = editorRef.current?.getValue() ?? ''
-        const { picName, cleanText } = parsePrompt(rawText)
-
-        if (!picName) {
+        if (extractedFilename) {
+            doRun(extractedFilename)
+        } else {
+            const { PromptFrame } = await import('../PromptFrame')
             addFrame(PromptFrame, {
-                width: 360,
-                height: 170,
                 isModal: true,
                 message: {
                     prompt: 'Enter a name for your new image',
-                    onOk: (name: string) => { doGenerate(cleanText, name, workbook) },
+                    onOk: (filename: string) => doRun(filename),
                 },
             })
-            return
         }
-
-        doGenerate(cleanText, picName, workbook)
     }
 
     return (
-        <div style={{
-            height: '36px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            padding: '0 6px',
-            gap: '4px',
-            background: '#1a1a1a',
-            borderTop: '1px solid #333',
-            flexShrink: 0,
-        }}>
-            <ComposerButtonComponent icon={ButtonIcons.previous} handler={previousPrompt} tooltipLabel="Previous Prompt" />
-            <ComposerButtonComponent icon={ButtonIcons.next} handler={nextPrompt} tooltipLabel="Next Prompt" />
-            <ComposerButtonComponent icon={ButtonIcons.play} handler={runPrompt} tooltipLabel="Run Prompt" />
+        <div
+            style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                padding: '4px 8px',
+                background: '#252526',
+                borderTop: '1px solid #3a3a3a',
+                gap: 4,
+                flexShrink: 0,
+            }}
+        >
+            <ComposerButtonComponent
+                icon={ButtonIcons.previous}
+                handler={previousPrompt}
+                tooltipLabel="Previous Prompt"
+            />
+            <ComposerButtonComponent
+                icon={ButtonIcons.next}
+                handler={nextPrompt}
+                tooltipLabel="Next Prompt"
+            />
+            <ComposerButtonComponent
+                icon={ButtonIcons.play}
+                handler={runPrompt}
+                tooltipLabel="Run Prompt"
+            />
         </div>
     )
 }

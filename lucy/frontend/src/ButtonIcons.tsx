@@ -16,13 +16,11 @@ import { FaRegSave } from 'react-icons/fa'
 import { FaSave } from 'react-icons/fa'
 import { BsSkipBackwardFill } from 'react-icons/bs'
 import { BsSkipForwardFill } from 'react-icons/bs'
-import React from 'react'
 
 const size = 18
 
 export const ButtonIcons = {
     back: <BsArrowLeftShort size={size} />,
-    close: <BsX size={20} />,
     goLeft: <BsChevronLeft size={size} />,
     goRight: <BsChevronRight size={size} />,
     faRegCopy: <FaRegCopy size={16} />,

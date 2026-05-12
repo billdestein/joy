@@ -1,13 +1,9 @@
-let _maxZIndex = 0
+let currentMaxZ = 10
 
-export function getMaxZIndex(): number {
-    return _maxZIndex
+export function getNextZ(): number {
+    return ++currentMaxZ
 }
 
-export function nextZIndex(): number {
-    return ++_maxZIndex
-}
-
-export function setZIndex(z: number): void {
-    if (z > _maxZIndex) _maxZIndex = z
+export function getCurrentMax(): number {
+    return currentMaxZ
 }

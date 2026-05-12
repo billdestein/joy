@@ -3,9 +3,17 @@ import { createRemoteJWKSet, jwtVerify } from 'jose'
 import { v4 as uuidv4 } from 'uuid'
 import { setSession } from '../session'
 import { findOrCreateUser } from '../user'
-import { ensureUserRootDir } from '../fileSystem'
+import { ensureUserDir } from '../fileSystem'
 
 const router = Router()
+
+const COGNITO_REGION = process.env.COGNITO_REGION!
+const COGNITO_USER_POOL_ID = process.env.COGNITO_USER_POOL_ID!
+
+const jwksUrl = new URL(
+    `https://cognito-idp.${COGNITO_REGION}.amazonaws.com/${COGNITO_USER_POOL_ID}/.well-known/jwks.json`
+)
+const JWKS = createRemoteJWKSet(jwksUrl)
 
 router.post('/login', async (req: Request, res: Response): Promise<void> => {
     const authHeader = req.headers.authorization
@@ -14,38 +22,29 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         return
     }
     const idToken = authHeader.slice(7)
-
-    const region = process.env.COGNITO_REGION!
-    const userPoolId = process.env.COGNITO_USER_POOL_ID!
-    const jwksUrl = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}/.well-known/jwks.json`
-
-    let email: string
     try {
-        const JWKS = createRemoteJWKSet(new URL(jwksUrl))
-        const { payload } = await jwtVerify(idToken, JWKS)
-        email = payload['email'] as string
+        const { payload } = await jwtVerify(idToken, JWKS, {
+            issuer: `https://cognito-idp.${COGNITO_REGION}.amazonaws.com/${COGNITO_USER_POOL_ID}`,
+        })
+        const email = payload.email as string
         if (!email) {
             res.status(401).json({ error: 'No email in token' })
             return
         }
+        const sessionId = uuidv4()
+        await setSession(sessionId, email)
+        const user = findOrCreateUser(email)
+        ensureUserDir(user.slug)
+        res.cookie('sessionId', sessionId, {
+            httpOnly: true,
+            sameSite: 'strict',
+            maxAge: 3600 * 1000,
+        })
+        res.status(200).end()
     } catch (err) {
-        console.error('JWT verification failed:', err)
+        console.error('Login error:', err)
         res.status(401).json({ error: 'Invalid token' })
-        return
     }
-
-    const user = findOrCreateUser(email)
-    ensureUserRootDir(user.slug)
-
-    const sessionId = uuidv4()
-    await setSession(sessionId, email)
-
-    res.cookie('sessionId', sessionId, {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-    })
-    res.status(200).end()
 })
 
 export default router

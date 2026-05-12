@@ -1,125 +1,126 @@
-import { Router, Response } from 'express'
-import { GoogleGenAI } from '@google/genai'
-import { WorkbookType, PicType } from '@billdestein/joy-common'
-import { AuthRequest } from '../middleware'
+import { Router, Request, Response } from 'express'
+import { GoogleGenAI, Modality } from '@google/genai'
+import { authMiddleware } from '../middleware'
 import {
+    createWorkbook,
+    deleteWorkbook,
+    deletePic,
+    listWorkbooks,
     readWorkbook,
     writeWorkbook,
-    listWorkbooks,
-    deleteWorkbook,
-    deletePicFile,
     writePicFile,
-    picPath,
+    readPicFile,
 } from '../fileSystem'
-import * as fs from 'fs'
+import { PicType, WorkbookType } from '@billdestein/joy-common'
 
 const router = Router()
 
-router.post('/create-workbook', async (req: AuthRequest, res: Response): Promise<void> => {
+router.use(authMiddleware)
+
+const genai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY! })
+
+router.post('/create-workbook', async (req: Request, res: Response): Promise<void> => {
     const { workbookName } = req.body
-    const slug = req.user!.slug
-    const workbook: WorkbookType = {
-        createdAt: Date.now(),
-        pics: [],
-        prompts: [],
-        workbookName,
+    if (!workbookName) {
+        res.status(400).json({ error: 'workbookName required' })
+        return
     }
-    writeWorkbook(slug, workbook)
+    createWorkbook(req.user!.slug, workbookName)
     res.status(200).end()
 })
 
-router.post('/delete-pic', async (req: AuthRequest, res: Response): Promise<void> => {
-    const { workbook, picName }: { workbook: WorkbookType; picName: string } = req.body
-    const slug = req.user!.slug
-    const updated: WorkbookType = {
-        ...workbook,
-        pics: workbook.pics.filter(p => p.filename !== picName),
+router.post('/delete-pic', async (req: Request, res: Response): Promise<void> => {
+    const { workbook, picName } = req.body
+    if (!workbook || !picName) {
+        res.status(400).json({ error: 'workbook and picName required' })
+        return
     }
-    writeWorkbook(slug, updated)
-    deletePicFile(slug, workbook.workbookName, picName)
+    deletePic(req.user!.slug, workbook.workbookName, picName)
     res.status(200).end()
 })
 
-router.post('/delete-workbook', async (req: AuthRequest, res: Response): Promise<void> => {
+router.post('/delete-workbook', async (req: Request, res: Response): Promise<void> => {
     const { workbookName } = req.body
-    const slug = req.user!.slug
-    deleteWorkbook(slug, workbookName)
-    const workbooks = listWorkbooks(slug)
+    if (!workbookName) {
+        res.status(400).json({ error: 'workbookName required' })
+        return
+    }
+    deleteWorkbook(req.user!.slug, workbookName)
+    const workbooks = listWorkbooks(req.user!.slug)
     res.json({ workbooks })
 })
 
-router.post('/generate-pic', async (req: AuthRequest, res: Response): Promise<void> => {
-    const { imageFilename, workbook }: { imageFilename: string; workbook: WorkbookType } = req.body
-    const slug = req.user!.slug
-
+router.post('/generate-pic', async (req: Request, res: Response): Promise<void> => {
+    const { imageFilename, workbook } = req.body as { imageFilename: string; workbook: WorkbookType }
+    if (!imageFilename || !workbook) {
+        res.status(400).json({ error: 'imageFilename and workbook required' })
+        return
+    }
     const focusedPrompt = workbook.prompts.find(p => p.focused)
-    const promptText = focusedPrompt?.text ?? ''
-
+    if (!focusedPrompt) {
+        res.status(400).json({ error: 'No focused prompt' })
+        return
+    }
     try {
-        const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY! })
-        const result = await ai.models.generateImages({
+        const result = await genai.models.generateImages({
             model: 'imagen-4.0-generate-001',
-            prompt: promptText,
-            config: { numberOfImages: 1 },
+            prompt: focusedPrompt.text,
+            config: { numberOfImages: 1, outputMimeType: 'image/png' },
         })
-
-        const encodedImage = result.generatedImages?.[0]?.image?.imageBytes
-        const mimeType = result.generatedImages?.[0]?.image?.mimeType ?? 'image/png'
-
-        if (!encodedImage) {
+        const image = result.generatedImages?.[0]?.image
+        if (!image?.imageBytes || !image?.mimeType) {
             res.status(500).json({ error: 'No image returned from Gemini' })
             return
         }
-
-        writePicFile(slug, workbook.workbookName, imageFilename, Buffer.from(encodedImage, 'base64'))
-
-        const newPic: PicType = {
+        const encodedImage = image.imageBytes
+        const mimeType = image.mimeType
+        writePicFile(req.user!.slug, workbook.workbookName, imageFilename, encodedImage)
+        const pic: PicType = {
             createdAt: Date.now(),
             encodedImage: '',
             filename: imageFilename,
             mimeType,
         }
-
-        const otherPics = workbook.pics.filter(p => p.filename !== imageFilename)
-        const savedWorkbook: WorkbookType = { ...workbook, pics: [...otherPics, newPic] }
-        writeWorkbook(slug, savedWorkbook)
-
-        res.json({ workbook: savedWorkbook })
+        const updatedWorkbook = readWorkbook(req.user!.slug, workbook.workbookName)
+        updatedWorkbook.pics.push(pic)
+        writeWorkbook(req.user!.slug, updatedWorkbook)
+        res.json({ workbook: updatedWorkbook })
     } catch (err) {
         console.error('generate-pic error:', err)
         res.status(500).json({ error: String(err) })
     }
 })
 
-router.get('/get-pic', async (req: AuthRequest, res: Response): Promise<void> => {
-    const workbookName = req.query.workbookName as string
-    const picFilename = req.query.picFilename as string
-    const slug = req.user!.slug
+router.get('/get-pic', async (req: Request, res: Response): Promise<void> => {
+    const { workbookName, picFilename } = req.query as { workbookName: string; picFilename: string }
+    if (!workbookName || !picFilename) {
+        res.status(400).json({ error: 'workbookName and picFilename required' })
+        return
+    }
     try {
-        const filePath = picPath(slug, workbookName, picFilename)
-        const data = fs.readFileSync(filePath)
-        const encodedImage = data.toString('base64')
+        const encodedImage = readPicFile(req.user!.slug, workbookName, picFilename)
         res.json({ encodedImage })
     } catch (err) {
-        console.error('get-pic error:', err)
         res.status(404).json({ error: 'Pic not found' })
     }
 })
 
-router.get('/get-workbook', async (req: AuthRequest, res: Response): Promise<void> => {
-    const workbookName = req.query.workbookName as string
-    const slug = req.user!.slug
+router.get('/get-workbook', async (req: Request, res: Response): Promise<void> => {
+    const { workbookName } = req.query as { workbookName: string }
+    if (!workbookName) {
+        res.status(400).json({ error: 'workbookName required' })
+        return
+    }
     try {
-        const workbook = readWorkbook(slug, workbookName)
+        const workbook = readWorkbook(req.user!.slug, workbookName)
         res.json({ workbook })
-    } catch {
+    } catch (err) {
         res.status(404).json({ error: 'Workbook not found' })
     }
 })
 
-router.get('/list-workbooks', async (req: AuthRequest, res: Response): Promise<void> => {
-    const slug = req.user!.slug
-    const workbooks = listWorkbooks(slug)
+router.get('/list-workbooks', async (req: Request, res: Response): Promise<void> => {
+    const workbooks = listWorkbooks(req.user!.slug)
     res.json({ workbooks })
 })
 
