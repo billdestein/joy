@@ -27,6 +27,7 @@ execute(`
     We're just going to generate code.
     Do not start the backend server.
     Do not start the frontend server.
+    If there is no lucy directory, create it.
 `)
 
 learn(architecture)

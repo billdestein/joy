@@ -3,29 +3,45 @@
 //----------------------------------------------------------------------------------------------------
 export const composerButtonRowComponent = `
 
-The ComposerButtonRowComponent contains three ComposerButtonComponent.  They are:
+The CompuserButtonRowComponent has two child components:  The paginator and the play button.
+
+The paginator is a rectangular region centered in the ComposerButtonRowComponent.  
+Left to right it has a 'previous button', {index}, 'of', {count}, 'next button'.
+
+The previous button is:
 
 {
     icon: ButtonIcons.previous
     toolTipLabel: 'Previous Prompt'
-    Handler: previousPrompt (see details below)
+    Handler: previousButtonHandler (see details below)
 }
+
+The next button is:
 
 {
     icon: ButtonIcons.next
     toolTipLabel: 'Next Prompt'
-    Handler: nextPrompt (see details below)
+    Handler: nextButtonHandler (see details below)
 }
+
+{index} is the offset of the currently visible (focused) prompt within the workbook's
+prompts array.
+
+{count} is the number of prompts in the workbook's prompts array.
+
+The prevviousButtonHandler finds the focused prompt, marks it unfocused, finds the
+previous prompt (if there is one), marks it focused, and rerenders.
+
+The next ButtonHandler finds the focused prompt, marks it unfocused, finds the
+next prompt (if there is one), marks it focused, and rerenders.
+
+The 'play' button is:
 
 {
     icon: ButtonIcons.play
     toolTipLabel: 'Run Prompt'
-    Handler: runPrompt (see details below)
+    Handler: runPromptHandler (see details below)
 }
-
-The previousPrompt function simply does alert('previousPrompt')
-
-The nextPrompt function simply does alert('nextPrompt')
 
 Some details on prompts, comments and commands:
 
@@ -38,7 +54,7 @@ Some details on prompts, comments and commands:
 - If the filename has trailing punctuation, the trailing punctuation is removed from the filename
   before sending it to the backend.
 
-The runPrompt function:
+The runButtonHandler function:
 
 - Gets the prompt from the Monaco editor.
 - Extracts the imageFilename from the "-- save as" command.
