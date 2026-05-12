@@ -20,6 +20,7 @@ import { uploadWorkbookFrame } from './learn/uploadWorkbookFrame.joy.ts'
 import { viewerComponent } from './learn/viewerComponent.joy.ts'
 import { windows } from './learn/windows.joy.ts'
 import { workbookFrame } from './learn/workbookFrame.joy.ts'
+import { workbookProtocol } from './learn/workbookProtocol.joy.ts'
 import { workbookListFrame } from './learn/workbookListFrame.joy.ts'
 import { zoomFrame } from './learn/zoomFrame.joy.ts'
 
@@ -67,6 +68,8 @@ learn(viewerComponent)
 learn(windows)
 
 learn(workbookFrame)
+
+learn(workbookProtocol)
 
 learn(workbookListFrame)
 

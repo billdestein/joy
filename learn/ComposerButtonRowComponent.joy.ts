@@ -3,7 +3,12 @@
 //----------------------------------------------------------------------------------------------------
 export const composerButtonRowComponent = `
 
-The CompuserButtonRowComponent has two child components:  The paginator and the play button.
+The ComposerButtonRowComponent takes a single prop: editorText (string).  It reads
+workbook, setWorkbook, and setIsLoading from WorkbookContext via useWorkbook().  It
+uses stripForBackend before sending a workbook to the backend, and hydrateFromBackend
+after receiving one.
+
+The ComposerButtonRowComponent has two child components:  The paginator and the play button.
 
 The paginator is a rectangular region centered in the ComposerButtonRowComponent.  
 Left to right it has a 'previous button', {index}, 'of', {count}, 'next button'.
@@ -56,11 +61,10 @@ Some details on prompts, comments and commands:
 
 The runButtonHandler function:
 
-- Gets the prompt from the Monaco editor.
+- Gets the prompt text from the Monaco editor.
 - Extracts the imageFilename from the "-- save as" command.
 - If there is no "-- save as" command, uses PromptFrame with prompt "Enter a name for your new image"
-- Creates a PromptType object and pushes it onto the workbook's array of prompts.
-- Marks the new prompt as focused.  Marks all others as not focused.
+- Updates the focused prompt in place with the editor text.  Does not append a new prompt.
 - For each PicType in the workbook, sets the encodedImage to the empty string.
 - The backend generates the image and writes it to the filesystem.
 - The backend adds a PicType to the workbook's pics array.

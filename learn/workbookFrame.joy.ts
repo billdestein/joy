@@ -5,6 +5,17 @@ export const workbookFrame = `
 
 The WorkbookFrame is a React component that wraps Frame.
 
+At initialization time, the WorkbookFrame creates a WorkbookType with no pics, and
+a single prompt with text set to empty string.  The WorkbookFrame is the provider of
+the WorkbookContext.  The workbook and its setter, along with isLoading and its setter,
+are held in this context.  PicListComponent, ViewerComponent, and ComposerComponent
+access the workbook through the context, not through props.
+
+After loading the workbook from the backend, if the workbook has no prompts, the
+WorkbookFrame adds a single empty focused prompt before storing it in context.  This
+normalizes workbooks that were created before the backend was updated to include an
+initial prompt.
+
 The frame header has a single FrameHeaderButtonComponents:
 
 {
