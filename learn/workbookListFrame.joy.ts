@@ -36,6 +36,8 @@ where _wb holds the original WorkbookType. When the context menu needs the Workb
 (e.g. to pass to an API call or to open a WorkbookFrame), always read rowNode.data._wb —
 do not cast rowNode.data directly as WorkbookType, as it does not have a workbookName property.
 
+Left-clicking a row opens the corresponding WorkbookFrame, the same as the "Open workbook" context menu option.
+
 Each row has a context menu.  The context menu is implemented from scratch.  It does not
 use AG Grids context menu features.  When the user right clicks on a row, the context menu
 pops up, with its uper left corner at the cursor position when the click event happened.

@@ -31,6 +31,18 @@ execute(`
     If there is no lucy directory, create it.
 `)
 
+execute(`
+    Let's try to stick with this workflox:
+    - I express a concern or make a request
+    - You modify the output code (not the prompts) allowing me to preview 
+      your change to the product behavior or appearance.
+    - If I like the preview, I will ask you to show me the changes to the
+      prompts needed to reproduce the new output code in subsequent generations.
+      This is a preview of the prompts.
+    - If I like the prompts, I will tell you to apply your changes to the prompts
+`)
+
+
 learn(architecture)
 
 learn(backend)
