@@ -20,7 +20,12 @@ On file selection:
   - On success: call onUploaded(returnedWorkbook) and close the frame via canvas.removeFrame.
   - On error: display the error message in the viewport.
 
-While idle, the viewport shows an upload arrow and the text "Click or drop an image to upload".
-While uploading, the viewport shows "Uploading…".
+The viewport is split into a drop zone (flex: 1) and a button row at the bottom.
+
+The drop zone shows an upload arrow and the text "Drop an image here" while idle.
+While uploading, it shows "Uploading…".
+
+The button row (right-aligned) contains:
+- Browse: opens the hidden file input
 
 `
