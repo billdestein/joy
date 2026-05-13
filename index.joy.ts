@@ -17,6 +17,7 @@ import { picComponent } from './learn/picComponent.joy.ts'
 import { picListComponent } from './learn/picListComponent.joy.ts'
 import { promptFrame } from './learn/promptFrame.joy.ts'
 import { promptProtocol } from './learn/promptProtocol.joy.ts'
+import { uploadPicFrame } from './learn/uploadPicFrame.joy.ts'
 import { uploadWorkbookFrame } from './learn/uploadWorkbookFrame.joy.ts'
 import { viewerComponent } from './learn/viewerComponent.joy.ts'
 import { windows } from './learn/windows.joy.ts'
@@ -75,6 +76,8 @@ learn(picListComponent)
 learn(promptFrame)
 
 learn(promptProtocol)
+
+learn(uploadPicFrame)
 
 learn(uploadWorkbookFrame)
 

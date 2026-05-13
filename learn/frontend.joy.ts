@@ -23,10 +23,12 @@ variables before starting the frontend server.
 Initially, frontend shows an all black window with the word "Lucy" centered in the window
 in color gold.  And there's a signin button in the upper right that initiates Cognito login.
 
-Once loggedin, the frontend has a MainMenuComponent across the top of the browser windoe.  
+Once logged in, the frontend has a MainMenuComponent across the top of the browser window.
 The remainder of the vertical space is the canvas.
 
-One button in the button row is has label "Workbooks".  When clicked, it adds a 
+Immediately after login, a WorkbookListFrame is added to the canvas automatically.
+
+One button in the MainMenuComponent has label "Workbooks".  When clicked, it adds a
 WorkbookListFrame to the canvas.
 
 The OIDC scope must be 'openid email' — do not include 'profile', as Cognito does not enable

@@ -37,9 +37,10 @@ The WorkbookType has many pics and prompts.  WorkbookName is use as the the dire
 
 export type WorkbookType = {
     createdAt: number
+    focusedPicFilename: string
     pics: PicType[]
     prompts: PromptType[]
-    workbookName: string 
+    workbookName: string
 }
 
 `

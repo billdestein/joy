@@ -70,7 +70,7 @@ The frame has these three FrameHeaderButtonComponents right-aligned in the heade
 
 {
     icon: ButtonIcons.upload
-    toolTipLabel: 'Add Workbook'
+    toolTipLabel: 'Upload Workbook'
     Handler: uploadWorkbook (see details below)
 }
 

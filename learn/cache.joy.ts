@@ -23,6 +23,9 @@ The refresh function takes a workbook as its only argument and returns a Promise
 For any pic whose encodedImage is an empty string, the image is fetched from the backend
 using the get-pic endpoint and stored in idb-keyval.
 
+Pics with an empty mimeType are sentinel pics (e.g. the 'empty' placeholder) and are
+skipped — they have no file on disk and are returned as-is with encodedImage: ''.
+
 The refresh function returns a new WorkbookType that is a copy of the argument, with each
 PicType's encodedImage populated from idb-keyval.
 

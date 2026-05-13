@@ -51,7 +51,10 @@ The 'play' button is:
 See promptProtocol.joy.ts for details on how to prepare a prompt for 
 sending from the frontend to the backend.
 
-When the generate-pic response is received the ComposerComponent is 
-rerendered.
+When the generate-pic response is received:
+- Hydrate the returned workbook via hydrateFromBackend.
+- Add a new empty focused prompt and set all others unfocused.
+- Call setWorkbook with the final workbook.
+- Call setSelectedPicFilename(finalWorkbook.focusedPicFilename ?? 'empty').
 
 `

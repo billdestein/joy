@@ -89,7 +89,9 @@ Endpoint: /v1/workbooks/create-workbook (POST)
   - workbookName: string
 - Processing:
   - Create a new directory for the workbook in the user's 'workbooks' directory.
-  - Create a WorkbookType object with name and createdAt, and a single prompt with empty text, but no pics
+  - Create a WorkbookType object with name and createdAt, a single empty focused prompt,
+    and a single empty sentinel PicType with filename 'empty' and mimeType ''.
+  - Set focusedPicFilename to 'empty'.
   - Stringify the WorkbookType object and save it in a file named workbook.json
 - Output:
   - None
@@ -115,21 +117,42 @@ Endpoint: /v1/workbooks/delete-workbook (POST)
 
 Endpoint: /v1/workbooks/generate-pic (POST)
   - Input:
-    - referencedPics: PicType[]
-    - outputFilename
+    - imageFilename: string
     - workbook: WorkbookType
   - Processing:
-    - Use @google/genai": "^1.50.0"
-    - Use model imagen-4.0-generate-001
-    - Call Gemini
-    - Wrap the Gemini call in try/catch; on error, log the error and return status 500 with the error message
-    - Get the encodedImage from the response
-    - Get the mimeType from the response
-    - Write the encodedImage to outputFilename
-    - Create a PicType object
-    - Push the PicType onto the workbook's pics array
-    - Push an empty PromptType onto the workbook's prompts array.  Mark it focused.
+    - Find the focused PromptType in workbook.prompts; strip comment and command lines; use remaining text as promptText.
+    - Check workbook.focusedPicFilename:
+      - If 'empty' (or missing): call ai.models.generateImages with model imagen-4.0-generate-001
+        and promptText. This is text-to-image generation.
+      - Otherwise: read the source pic file from disk, base64-encode it, and call
+        ai.models.generateContent with model gemini-2.5-flash-image,
+        passing contents: [{ inlineData: { data: sourceBytes, mimeType } }, { text: promptText }].
+        Extract the result from response.candidates[0].content.parts — find the part with inlineData.
+        This is image mutation and works with a standard Google API key.
+    - Wrap the API call in try/catch; on error, log and return status 500 with the error message.
+    - Get encodedImage from the response (generatedImages[0].image.imageBytes).
+    - Write the raw bytes to imageFilename in the workbook directory.
+    - Create a PicType for the new pic (mimeType: 'image/png').
+    - Append the new PicType to workbook.pics.
+    - Set workbook.focusedPicFilename to imageFilename.
+    - Save and return the updated workbook.
   - Output
+    - workbook
+
+Endpoint: /v1/workbooks/upload-pic (POST)
+  - Input:
+    - workbookName: string
+    - imageFilename: string
+    - imageData: string (base64-encoded image bytes)
+    - mimeType: string
+  - Processing:
+    - Decode imageData and write the raw bytes to imageFilename in the workbook directory.
+    - Read the current workbook.json.
+    - Create a PicType for the new pic.
+    - Append it to workbook.pics.
+    - Set workbook.focusedPicFilename to imageFilename.
+    - Save and return the updated workbook.
+  - Output:
     - workbook
 
 Endpoint: /v1/workbooks/get-pic (GET)
@@ -158,6 +181,8 @@ Endpoint: /v1/workbooks/list-workbooks (GET)
   - workbooks: WorkbookType[]
         
 Some miscellaneous stuff:
+
+The Express JSON body size limit is set to 20mb to accommodate base64-encoded image uploads.
 
 The backend uses the standard redis client library -- not ioredis
 

@@ -14,11 +14,14 @@ The context holds:
 - setWorkbook: (wb: WorkbookType) => void — replaces the workbook
 - isLoading: boolean — true while a generate-pic call is in flight
 - setIsLoading: (loading: boolean) => void
-- selectedPicFilename: string | null — filename of the currently selected pic
-- setSelectedPicFilename: (filename: string | null) => void
+- selectedPicFilename: string — filename of the currently selected pic (never null; 'empty' when no real pic is focused)
+- setSelectedPicFilename: (filename: string) => void
 
 All descendants of WorkbookFrame access and update the workbook through this context.
 Props are not used to pass the workbook or its setters down the component tree.
+
+selectedPicFilename and workbook.focusedPicFilename are always kept in sync.
+'empty' is the sentinel value meaning no real pic is focused (text-to-image mode).
 
 A custom hook called useWorkbook() returns the context value.  It throws if called
 outside a WorkbookFrame.

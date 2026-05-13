@@ -5,13 +5,15 @@ export const workbookFrame = `
 
 The WorkbookFrame is a React component that wraps Frame.
 
-WorkbookFrame owns selectedPicFilename state (string | null), initialized to null.
-After loading a workbook from the backend, if the workbook has pics, selectedPicFilename
-is set to the filename of the last pic.
+WorkbookFrame owns selectedPicFilename state (string), initialized to 'empty'.
+After loading a workbook from the backend, selectedPicFilename is set to
+workbook.focusedPicFilename (defaulting to 'empty' if absent for old workbooks).
 selectedPicFilename and setSelectedPicFilename are provided through WorkbookContext.
+selectedPicFilename always equals workbook.focusedPicFilename.
 
-At initialization time, the WorkbookFrame creates a WorkbookType with no pics, and
-a single prompt with text set to empty string.  The WorkbookFrame is the provider of
+At initialization time, the WorkbookFrame creates a WorkbookType with a single empty
+sentinel pic (filename: 'empty', mimeType: ''), focusedPicFilename: 'empty', and a
+single prompt with text set to empty string.  The WorkbookFrame is the provider of
 the WorkbookContext.  The workbook and its setter, along with isLoading and its setter,
 and selectedPicFilename and its setter are held in this context.  PicListComponent, 
 ViewerComponent, and ComposerComponent access the workbook through the context, not 
@@ -22,7 +24,16 @@ WorkbookFrame adds a single empty focused prompt before storing it in context.  
 normalizes workbooks that were created before the backend was updated to include an
 initial prompt.
 
-The frame header has a single FrameHeaderButtonComponents:
+The frame header has these FrameHeaderButtonComponents:
+
+{
+    icon: ButtonIcons.upload
+    toolTipLabel: 'Upload Image'
+    Handler: Call Canvas.addFrame UploadPicFrame, passing message:
+        { workbookName, onUploaded }
+    onUploaded calls hydrateFromBackend on the returned workbook, then
+    calls setWorkbook and setSelectedPicFilename(hydrated.focusedPicFilename ?? 'empty').
+}
 
 {
     icon: ButtonIcons.x
