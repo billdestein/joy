@@ -115,18 +115,20 @@ Endpoint: /v1/workbooks/delete-workbook (POST)
 
 Endpoint: /v1/workbooks/generate-pic (POST)
   - Input:
-    - imageFilename
+    - referencedPics: PicType[]
+    - outputFilename
     - workbook: WorkbookType
   - Processing:
     - Use @google/genai": "^1.50.0"
     - Use model imagen-4.0-generate-001
-    - Call Gemini passing the focused prompt
+    - Call Gemini
     - Wrap the Gemini call in try/catch; on error, log the error and return status 500 with the error message
     - Get the encodedImage from the response
     - Get the mimeType from the response
-    - Write the encodedImage to a file named imageFilename
+    - Write the encodedImage to outputFilename
     - Create a PicType object
     - Push the PicType onto the workbook's pics array
+    - Push an empty PromptType onto the workbook's prompts array.  Mark it focused.
   - Output
     - workbook
 

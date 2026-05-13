@@ -7,7 +7,8 @@ PicListComponent takes no props.  It reads the workbook from WorkbookContext via
 useWorkbook().
 
 The PicListComponent iterates over the pics in the workbook.  For each pic,
-a PicComponent is rendered.  The pic.filename is passed as the 'name' prop
-of the PicComponent.
+a PicComponent is rendered.  The pic.filename is passed as the 'name' prop.
+A pic is focused when its filename matches selectedPicFilename from WorkbookContext.
+Clicking a PicComponent calls setSelectedPicFilename with that pic's filename.
 
 `

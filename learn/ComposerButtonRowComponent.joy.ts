@@ -48,33 +48,10 @@ The 'play' button is:
     Handler: runPromptHandler (see details below)
 }
 
-Some details on prompts, comments and commands:
+See promptProtocol.joy.ts for details on how to prepare a prompt for 
+sending from the frontend to the backend.
 
-- A prompt is free form text with a few exceptions.
-- Lines beginning with '//' are comments.
-- Comments are stripped from the prompt before sending the prompt to the backend.
-- Lines beginning with '--' are commands.
-- The '-- save as' command takes one argument -- the filename of the output image.
-- The filename must be a valid Linux filename.
-- If the filename has trailing punctuation, the trailing punctuation is removed from the filename
-  before sending it to the backend.
-
-The runButtonHandler function:
-
-- Gets the prompt text from the Monaco editor.
-- Extracts the imageFilename from the "-- save as" command.
-- If there is no "-- save as" command, uses PromptFrame with prompt "Enter a name for your new image"
-- Updates the focused prompt in place with the editor text.  Does not append a new prompt.
-- For each PicType in the workbook, sets the encodedImage to the empty string.
-- The backend generates the image and writes it to the filesystem.
-- The backend adds a PicType to the workbook's pics array.
-- The API response includes a workbook.
-- The workbook is passed to the Cache's refresh function.
-- The refresh function pulls images from the backend that are referenced in the
-  workbook but do not exist in the cache.
-- The PicListComponent and the ViewerComponent are refreshed.
-- A new empty prompt is pushed onto the workbook's array of prompts.
-- The rightmost prompt is marked focused, all other prompts are marked not focused.
-- The ComposerComponent is rerendered.
+When the generate-pic response is received the ComposerComponent is 
+rerendered.
 
 `

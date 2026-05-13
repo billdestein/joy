@@ -70,7 +70,7 @@ y, height, width and z-index.  The representation also includes the frames' curr
 x, y, height, width and z-index.
 
 Modal frames are different from regular frames.  When the Canvas adds a new modal frame, it first adds 
-a 'click catcher' div to the DOM.  The click catcher div is translucent rgba(0, 255, 0, 0.5).
+a 'click catcher' div to the DOM.  The click catcher div is translucent gray.
 The click catcher covers the entire canvas.  It has a z-index one greater current z-index of all
 frames currently on the canvas.  The click catcher blocks all pointer events from reaching anything behind it.  Do not set pointer-events:none on it — that would cause clicks to pass through rather than be blocked.  Once the click catcher 
 is in place, the canvas adds the new modal frame.  The modal frame is centered on the canvas both 
@@ -101,9 +101,3 @@ A frame can be dragged right but only until the left edge of the frame is 30 pix
 right side of the viewport.
 
 `
-
-// Modal frames are different from regular frames.  When the Canvas adds a new modal frame, it first adds 
-// a div into the DOM that we call the click catcher div.  The click catcher is translucent and covers the 
-// entire canvas.  The click catcher has a z-index one greater than the nearest frame.  Then the Canvas adds 
-// the modal frame centered in the canvas both horizontally and vertically.  The x and y props are ignored.  
-// The canvas.removeFrame removes both the modal frame and the click catcher.

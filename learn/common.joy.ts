@@ -24,7 +24,7 @@ export type PicType = {
     mimeType: string
 }
 
-The PromptType holds a single Claude prompt.  In the UI, only a single prompt is visible 
+The PromptType holds a single Gemini prompt.  In the UI, only a single prompt is visible 
 at a time, and the 'focused' field indicates which prompt.  It's okay to have that in a common data type.
 
 export type PromptType = {

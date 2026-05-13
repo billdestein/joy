@@ -5,9 +5,9 @@ export const workbookListFrame = `
 
 The WorkbookListFrame is a React component that wraps Frame.
 
-At initialization, a WorkbookListWidget calls the list-workbooks endpoint on the backend server.
+At initialization, a WorkbookList calls the list-workbooks endpoint on the backend server.
 
-The WorkbookListWidget has an AG Grid React that fills the frame body.
+The WorkbookListFrame has an AG Grid React that fills the frame body.
 
 Use ag-grid-community and ag-grid-react version ^30.0.0.
 Import 'ag-grid-community/styles/ag-grid.css' and 'ag-grid-community/styles/ag-theme-alpine.css'.
