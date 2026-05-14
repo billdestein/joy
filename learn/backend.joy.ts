@@ -44,11 +44,28 @@ Each is assigned to en environment variable with the same name.
 
 The backend server listens on port 8080.
 
-The backend code has a map of email to User object.
+The backend code has an in-memory map of email to User object.
 
 The user object has these properties:
     - email: string
     - slug: string
+
+The slug is computed by slugFromEmail, and the inverse is emailFromSlug:
+
+    export function slugFromEmail(email: string): string {
+        return email.toLowerCase().replace('@', '-at-').replace(/[^a-z0-9.-]/g, '-')
+    }
+
+    export function emailFromSlug(slug: string): string {
+        return slug.replace('-at-', '@')
+    }
+
+Example: billdestein@gmail.com → billdestein-at-gmail.com
+
+Slugs are persisted to MOUNT_DIR/users.json (a JSON object mapping email to slug).
+On first login the slug is computed with slugFromEmail and written to users.json.
+On subsequent logins the slug is read from users.json, so it never drifts even
+if the slugFromEmail algorithm changes.
 
 All of the this happens in the login endpoint:
 - The login endpoint receives an authorization header that contains the Cognito ID token.
@@ -140,7 +157,9 @@ Endpoint: /v1/workbooks/generate-pic (POST)
         and promptText. This is text-to-image generation.
       - Otherwise: read the source pic file from disk, base64-encode it, and call
         ai.models.generateContent with model gemini-2.5-flash-image,
-        passing contents: [{ inlineData: { data: sourceBytes, mimeType } }, { text: promptText }].
+        passing contents as a flat array of parts (NOT wrapped in a role object):
+        [{ inlineData: { data: sourceBytes, mimeType } }, { text: promptText }].
+        No config block (no responseModalities needed).
         Extract the result from response.candidates[0].content.parts — find the part with inlineData.
         This is image mutation and works with a standard Google API key.
     - Wrap the API call in try/catch; on error, log and return status 500 with the error message.
@@ -166,6 +185,21 @@ Endpoint: /v1/workbooks/upload-pic (POST)
     - Append it to workbook.pics.
     - Set workbook.focusedPicFilename to imageFilename.
     - Save and return the updated workbook.
+  - Output:
+    - workbook
+
+Endpoint: /v1/workbooks/upload-pic-from-url (POST)
+  - Input:
+    - workbookName: string
+    - imageUrl: string
+    - imageFilename: string
+  - Processing:
+    - Fetch the image from imageUrl using Node's native fetch (backend-side, no CORS issues).
+    - On fetch error, return status 502 with the error message.
+    - Derive mimeType from the Content-Type response header.
+    - Write the raw bytes to imageFilename in the workbook directory.
+    - Read the current workbook, create a PicType, append it to pics,
+      set focusedPicFilename to imageFilename, save and return the updated workbook.
   - Output:
     - workbook
 
