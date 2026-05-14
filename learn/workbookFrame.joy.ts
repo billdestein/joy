@@ -24,7 +24,14 @@ WorkbookFrame adds a single empty focused prompt before storing it in context.  
 normalizes workbooks that were created before the backend was updated to include an
 initial prompt.
 
-The frame header has these FrameHeaderButtonComponents:
+The frame header has these FrameHeaderButtonComponents (left to right):
+
+{
+    icon: ButtonIcons.faRegCopy
+    toolTipLabel: 'Clone Workbook'
+    Handler: Open a PromptFrame asking for a new workbook name.  On ok, POST
+        to /v1/workbooks/clone-workbook with { workbook: stripForBackend(workbook), newWorkbookName }.
+}
 
 {
     icon: ButtonIcons.upload

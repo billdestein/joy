@@ -49,12 +49,16 @@ props. In the handler, call preventDefault(), then walk up from event.target usi
 gridApi.getDisplayedRowAtIndex(rowIndex) to get the row data. Store the grid API via
 onGridReady.
 
-The context menu has these three options:
+The context menu has these four options:
 
-The "Delete workbook" option makes an API call to the backend's 
+The "Clone workbook" option opens a PromptFrame asking for a new workbook name.
+On ok, it POSTs to /v1/workbooks/clone-workbook with { workbook, newWorkbookName }
+and then refreshes the grid.
+
+The "Delete workbook" option makes an API call to the backend's
 delete-workbook endpoint.  It uses the response to refresh the grid.
 
-The "Download workbook" option stringifies the workbook with an indent of four, 
+The "Download workbook" option stringifies the workbook with an indent of four,
 and downloads it as workbook.lucy.
 
 The "Open workbook" calls canvas.addFrame to add the WorkbookFrame.

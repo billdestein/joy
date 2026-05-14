@@ -96,6 +96,20 @@ Endpoint: /v1/workbooks/create-workbook (POST)
 - Output:
   - None
 
+Endpoint: /v1/workbooks/clone-workbook (POST)
+  - Input:
+    - workbook: WorkbookType (the source workbook)
+    - newWorkbookName: string
+  - Processing:
+    - Create a new directory for the clone.
+    - Copy all pic files (skipping the empty sentinel) from the source workbook directory
+      to the new directory.
+    - Create a cloned WorkbookType: same pics, prompts, and focusedPicFilename as the
+      source, but with the new workbookName and a fresh createdAt.
+    - Save workbook.json in the new directory.
+  - Output:
+    - None
+
 Endpoint: /v1/workbooks/delete-pic (POST)
   - Input:
     - workbook
