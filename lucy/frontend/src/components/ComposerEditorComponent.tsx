@@ -1,0 +1,29 @@
+import React from 'react'
+import Editor from '@monaco-editor/react'
+
+type Props = {
+    value: string
+    onChange: (value: string) => void
+}
+
+export default function ComposerEditorComponent({ value, onChange }: Props) {
+    return (
+        <div style={{ width: '100%', height: '100%' }}>
+            <Editor
+                height="100%"
+                theme="vs-dark"
+                language="plaintext"
+                value={value}
+                onChange={v => onChange(v ?? '')}
+                options={{
+                    minimap: { enabled: false },
+                    lineNumbers: 'off',
+                    wordWrap: 'on',
+                    fontSize: 13,
+                    readOnly: false,
+                    scrollBeyondLastLine: false,
+                }}
+            />
+        </div>
+    )
+}
