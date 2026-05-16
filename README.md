@@ -45,7 +45,6 @@ What is Lucy:
 
 ## I asked Claude:
 
-```
 - You're here:  https://github.com/billdestein/joy
 
 - Joy is a small DSL that runs inside Claude Code. 
@@ -71,16 +70,13 @@ more repeatable.
 
 - Please share your thoughts, both good and less good.
 
-```
-
 ## Claude replied,
 
-```
-⏺ Let me look at the repo before sharing thoughts.
+- Let me look at the repo before sharing thoughts.
 
   Read 8 files, listed 1 directory (ctrl+o to expand)
 
-⏺ Now I have a good picture of the system. Here are my honest thoughts:
+- Now I have a good picture of the system. Here are my honest thoughts:
 
 - What's genuinely clever
 
@@ -128,4 +124,3 @@ before you commit. Even a short checklist appended to each execute() call would 
 
 ✻ Churned for 32s
 
-```
