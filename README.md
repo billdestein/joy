@@ -39,7 +39,7 @@ What is Lucy:
 - Lucy is built entirely from generated code.
 - Lucy code was generated using Claude and the Joy DSL
 - Lucy uses the Gemini Typescript SDK for image generation and image manipulation.
-- Lucy was built from scratch in nine business days. (Check the commit history on this project)
+- Lucy was built from scratch in nine calendar days. (Check the commit history on this project)
 
 # Claude's thoughts on Joy and Lucy:
 
